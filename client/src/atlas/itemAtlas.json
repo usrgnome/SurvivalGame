@@ -1,0 +1,172 @@
+{"frames": {
+
+"hammer_amethyst.png":
+{
+	"frame": {"x":835,"y":1,"w":139,"h":68},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":139,"h":68},
+	"sourceSize": {"w":139,"h":68}
+},
+"hammer_diamond.png":
+{
+	"frame": {"x":835,"y":71,"w":139,"h":68},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":139,"h":68},
+	"sourceSize": {"w":139,"h":68}
+},
+"hammer_gold.png":
+{
+	"frame": {"x":835,"y":141,"w":139,"h":68},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":139,"h":68},
+	"sourceSize": {"w":139,"h":68}
+},
+"hammer_stone.png":
+{
+	"frame": {"x":600,"y":500,"w":139,"h":68},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":139,"h":68},
+	"sourceSize": {"w":139,"h":68}
+},
+"pickaxe_amethyst.png":
+{
+	"frame": {"x":787,"y":211,"w":209,"h":175},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":209,"h":175},
+	"sourceSize": {"w":209,"h":175}
+},
+"pickaxe_diamond.png":
+{
+	"frame": {"x":393,"y":565,"w":205,"h":175},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":205,"h":175},
+	"sourceSize": {"w":205,"h":175}
+},
+"pickaxe_gold.png":
+{
+	"frame": {"x":785,"y":388,"w":209,"h":175},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":209,"h":175},
+	"sourceSize": {"w":209,"h":175}
+},
+"pickaxe_stone.png":
+{
+	"frame": {"x":600,"y":570,"w":205,"h":175},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":205,"h":175},
+	"sourceSize": {"w":205,"h":175}
+},
+"pickaxe_wood.png":
+{
+	"frame": {"x":807,"y":565,"w":205,"h":175},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":205,"h":175},
+	"sourceSize": {"w":205,"h":175}
+},
+"spear_amethyst.png":
+{
+	"frame": {"x":418,"y":1,"w":415,"h":72},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":35,"w":415,"h":72},
+	"sourceSize": {"w":415,"h":149}
+},
+"spear_diamond.png":
+{
+	"frame": {"x":1,"y":78,"w":415,"h":68},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":37,"w":415,"h":68},
+	"sourceSize": {"w":415,"h":149}
+},
+"spear_gold.png":
+{
+	"frame": {"x":1,"y":1,"w":415,"h":75},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":33,"w":415,"h":75},
+	"sourceSize": {"w":415,"h":149}
+},
+"spear_stone.png":
+{
+	"frame": {"x":418,"y":75,"w":415,"h":70},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":36,"w":415,"h":70},
+	"sourceSize": {"w":415,"h":149}
+},
+"spear_wood.png":
+{
+	"frame": {"x":418,"y":147,"w":415,"h":38},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":53,"w":415,"h":38},
+	"sourceSize": {"w":415,"h":149}
+},
+"sword_amethyst.png":
+{
+	"frame": {"x":1,"y":148,"w":391,"h":166},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":391,"h":166},
+	"sourceSize": {"w":391,"h":166}
+},
+"sword_diamond.png":
+{
+	"frame": {"x":1,"y":316,"w":390,"h":177},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":390,"h":177},
+	"sourceSize": {"w":390,"h":177}
+},
+"sword_gold.png":
+{
+	"frame": {"x":394,"y":187,"w":391,"h":144},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":391,"h":144},
+	"sourceSize": {"w":391,"h":144}
+},
+"sword_stone.png":
+{
+	"frame": {"x":1,"y":495,"w":390,"h":139},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":390,"h":139},
+	"sourceSize": {"w":390,"h":139}
+},
+"sword_wood.png":
+{
+	"frame": {"x":393,"y":333,"w":390,"h":165},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":390,"h":165},
+	"sourceSize": {"w":390,"h":165}
+},
+"wood_sword.png":
+{
+	"frame": {"x":1,"y":636,"w":307,"h":112},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":307,"h":112},
+	"sourceSize": {"w":307,"h":112}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "itemAtlas.png",
+	"format": "RGBA8888",
+	"size": {"w":1013,"h":749},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:89cd6fb097c3ca61e9520969440165c3:03c3d5130d307aa135edf1101478fa7e:dda5a0ebfe3af5081ebd0bb39e8c326b$"
+}
+}
