@@ -3,8 +3,15 @@ import { GameClient_render, GameClient_resize, GameClient_update } from "./GameC
 import { MapEditor_init } from "./mapEditor.ts/mapEditor";
 import "./Socket";
 import { requestRespawn, Socket_connect } from "./Socket";
+import Stats from "stats-js";
+
+
+const stats = Stats();
+
+document.body.appendChild(stats.dom);
 
 console.log("Hello world!");
+
 function init() {
   initControls();
   GameClient_resize(); // automatically resize the canvas for the first time
@@ -26,6 +33,7 @@ function tick() {
   GameClient_update(now, delta);
   GameClient_render(); // render the game world
   window.requestAnimationFrame(tick);
+  stats.update();
 }
 
 init();

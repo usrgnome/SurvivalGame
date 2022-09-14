@@ -1,4 +1,5 @@
 import { Vector } from "matter-js";
+import { logger, loggerLevel } from "./Logger";
 
 export function mapVertsToMatterVerts(verts: number[]) {
   const v = [];
@@ -30,4 +31,11 @@ export function get_polygon_centroid(pts) {
   }
   f = twicearea * 3;
   return { x: x / f + first.x, y: y / f + first.y };
+}
+
+export function assert(condition: boolean, message: string = 'Assetion failed!') {
+  if (!condition) {
+    logger.log(loggerLevel.error, `GameServer: assert failed: ${message}`);
+    throw message;
+  }
 }

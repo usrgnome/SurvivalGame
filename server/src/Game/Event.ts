@@ -35,3 +35,11 @@ export const hitBounceEvent = {
   eid: -1,
   angle: 0
 };
+
+export interface IEventTickStats {
+  type: string;
+}
+
+export const tickStatsEvent = {
+  type: 'tickStats'
+}

@@ -4,19 +4,21 @@ import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { C_AttackTimer, C_Base, C_ClientHandle, C_GivesScore, C_Health, C_HitBouceEffect, C_Leaderboard, C_Position, C_Rotation, C_TerrainInfo, C_Weilds } from "./ECS/Components";
 import { Items } from '../../../shared/Item';
 import decomp from "poly-decomp"
-import { angleDifference, assert } from '../../../shared/Utilts';
+import { angleDifference } from '../../../shared/Utilts';
 import { leaderboardQuery } from './ECS/Queries';
-import { attackTimerSystem, bodySystem, controlSystem, mobSystem, mouseSystem, resetHitBouceSystem } from './ECS/Systems';
+import { attackTimerSystem, bodySystem, controlSystem, hungerSystem, mobSystem, mouseSystem, resetHitBouceSystem, temperateSystem } from './ECS/Systems';
 import { mapData } from './MapData';
-import { get_polygon_centroid, mapVertsToMatterVerts } from '../server/ServerUtils';
+import { assert, get_polygon_centroid, mapVertsToMatterVerts } from '../server/ServerUtils';
 import { collisionLayer, COLLISION_TYPES } from '../server/config';
 import EventEmitter from "events";
-import { hitBounceEvent, hurtEvent, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, removedEvent } from './Event';
-import { createPlayer, createRock, createTree, createWolf } from './ECS/EntityFactory';
+import { hitBounceEvent, hurtEvent, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
+import { createPlayer, createRock, createTree, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
+import { logger, loggerLevel } from '../server/Logger';
 
 Common.setDecomp(decomp);
 
 export default class GameWorld extends EventEmitter {
+
 
   /**
    * MatterJS Engine
@@ -69,9 +71,12 @@ export default class GameWorld extends EventEmitter {
    */
   private toRemoveQueue: number[] = [];
 
+  private timeUntilNextStatsTick = 0;
+
   _on(name: 'entityRemoved', callback: (e: IEventEntityRemoved) => void): void;
   _on(name: 'hitBounce', callback: (e: IEventHitBounce) => void): void;
   _on(name: 'entityHurt', callback: (e: IEventEntityHurt) => void): void;
+  _on(name: 'tickStats', callback: (e: IEventTickStats) => void): void;
   _on(name: string, callback: (e: any) => void) {
     this.on(name, callback);
   }
@@ -113,7 +118,7 @@ export default class GameWorld extends EventEmitter {
             break;
         }
       }
-    })
+    });
 
     Events.on(this.engine, "collisionEnd", function (e) {
       for (let i = 0; i < e.pairs.length; i++) {
@@ -316,30 +321,30 @@ export default class GameWorld extends EventEmitter {
     }
   }
 
-  damage(dealer: number, target: number, damage: number) {
-    assert(target !== -1 && Number.isInteger(target), "World::damage Invalid target eid");
-    assert(Number.isInteger(dealer), "World::damage Invalid dealer eid");
+  damage(eid: number, damage: number, originEntity: number = NULL_ENTITY) {
+    assert(eid !== NULL_ENTITY && Number.isInteger(eid), "World::damage Invalid target eid");
+    assert(Number.isInteger(originEntity), "World::damage Invalid dealer eid");
+    assert(damage >= 0, "Damage must be a positive number, use .heal(eid, health) to increase entity health");
 
-    if (!C_Base.active[target] || !C_Base.alive[target]) return;
+    if (!this.isEntityActive(eid)) return;
 
-    const health = C_Health.health[target];
+    const health = C_Health.health[eid];
     const newHealth = Math.floor(health - damage);
 
     if (newHealth <= 0) {
-      C_Health.health[target] = 0;
-      if (dealer !== -1) this.onEntityKilled(target, dealer);
-      this.onEntityDie(target);
+      C_Health.health[eid] = 0;
+      if (originEntity !== NULL_ENTITY)
+        this.onEntityKilled(eid, originEntity);
+      this.onEntityDie(eid);
     } else {
-      C_Health.health[target] = newHealth;
+      C_Health.health[eid] = newHealth;
 
-      hurtEvent.eid = target;
+      hurtEvent.eid = eid;
       hurtEvent.cid = -1;
       hurtEvent.health = newHealth;
 
-      if (hasComponent(this.world, C_ClientHandle, target)) {
-        const cid = C_ClientHandle.cid[target];
-        hurtEvent.cid = cid;
-      }
+      if (hasComponent(this.world, C_ClientHandle, eid))
+        hurtEvent.cid = C_ClientHandle.cid[eid];
 
       this.emit(hurtEvent.type, hurtEvent);
     }
@@ -360,7 +365,7 @@ export default class GameWorld extends EventEmitter {
       const body = bodies[i];
 
       // @ts-ignore
-      if (body.eid === -1) continue;
+      if (body.eid === NULL_ENTITY || body.eid === undefined) continue;
 
       const position = body.position;
       const distSqrd = (position[0] - x) ** 2 + (position[1] - y) ** 2;
@@ -381,6 +386,7 @@ export default class GameWorld extends EventEmitter {
 
       // @ts-ignore
       const targetEid = body.eid;
+      assert(Number.isInteger(targetEid), "GameWorld::sweep expects targetEid to be integer!");
 
       const force = 0.01;
       const forceX = Math.cos(angle) * force;
@@ -388,28 +394,20 @@ export default class GameWorld extends EventEmitter {
 
       Body.applyForce(body, body.position, Vector.create(forceX, forceY));
 
-
       if (hasComponent(this.world, C_HitBouceEffect, targetEid)) {
         if (!C_HitBouceEffect.hitInThisFrame[targetEid]) {
           C_HitBouceEffect.hitInThisFrame[targetEid] = 1;
-
-
           hitBounceEvent.angle = angle;
           hitBounceEvent.eid = targetEid;
-
           this.emit(hitBounceEvent.type, hitBounceEvent);
-
-
         }
       }
 
-      if (hasComponent(this.world, C_Health, targetEid)) {
+      if (hasComponent(this.world, C_Health, targetEid))
         this.damage(dealer, targetEid, 40);
-      }
 
-      if (dealer !== -1 && hasComponent(this.world, C_Leaderboard, dealer) && hasComponent(this.world, C_GivesScore, targetEid)) {
+      if (dealer !== -1 && hasComponent(this.world, C_Leaderboard, dealer) && hasComponent(this.world, C_GivesScore, targetEid))
         C_Leaderboard.score[dealer] += C_GivesScore.hitScore[targetEid];
-      }
     }
   }
 
@@ -473,6 +471,16 @@ export default class GameWorld extends EventEmitter {
     controlSystem(this, this.world, delta); // update entity controls
     mouseSystem(this, this.world);
     attackTimerSystem(this, this.world, delta);
+
+    this.timeUntilNextStatsTick -= delta;
+    if (this.timeUntilNextStatsTick <= 0) {
+      hungerSystem(this, this.world);
+      temperateSystem(this, this.world);
+      this.timeUntilNextStatsTick = 5000;
+
+      this.emit(tickStatsEvent.type, tickStatsEvent);
+    }
+
     const ecs2 = Date.now();
 
     const physStart = Date.now();
@@ -508,7 +516,7 @@ export default class GameWorld extends EventEmitter {
    * @memberof GameWorld
    */
   generateMap() {
-
+    logger.log(loggerLevel.info, `GameWorld: generating terrain`);
     this.loadForType("OCEAN", "OCEAN", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
     this.loadForType("FORREST", "LAND", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
 

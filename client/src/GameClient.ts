@@ -5,16 +5,18 @@ import ObjectManagerAssigned from "../../shared/lib/ObjectManagerAssignedIds";
 import { getKeyState, getMouseState, isControlsDirty, mouse, mouseX, mouseY, stopMoving } from "./Controls";
 import { Entity, getSnapShot, storeSnapShot } from "./Entity/Entity";
 import { mBufferGeometry, mNode, mRenderer, mSprite } from "./Renderer";
-import { flushStream, inStream, outStream}  from "./Socket";
+import { flushStream, inStream, outStream } from "./Socket";
 import { lerpAngle } from "../../shared/Utilts";
 import { HumanEntity } from "./Entity/Human";
 import { HitAnimatedEntity, TreeEntity } from "./Entity/Tree";
 import { Leaderboard_maxSize, Leaderboard_reposition, Leaderboard_showValue, Leaderboard_sprite, Leaderboard_updateValue } from "./UI/Leaderboard";
-import { healthBar, Hotbar_reposition, Hotbar_root, Hotbar_updateSlot } from "./UI/Hotbar";
+import { healthBar, Hotbar_reposition, Hotbar_root, Hotbar_updateSlot, hungerBar, temperateBar } from "./UI/Hotbar";
 import { RockEntity } from "./Entity/Rock";
 import { activeVisibleDecorations, deactiveVisibleDecorations, initDecoration } from "./Decoration.ts/Decoration";
 import { MobEntity } from "./Entity/MobEntity";
 import earcut from "./Ear";
+import { isDev } from "./dev";
+import { debugInfo, Debug_init } from "./UI/Debug";
 
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -45,16 +47,18 @@ root.add(gameWorldScene);
 root.add(gameTopScene);
 root.add(uiScene);
 
+if(isDev()) uiScene.add(debugInfo);
+
 const mapData = { "FORREST": { "color": "#71b47c", "polygons": [] }, "SNOW": { "color": "#daedf8", "polygons": [] }, "JUNGLE": { "color": "#aae26f", "polygons": [] }, "OCEAN": { "color": "#357ba0", "polygons": [[506.1644431110645, 827.3223378479067, 743.0065483742226, 734.3398817075556, 790.3749694268541, 404.51532030404667, 634.234618549661, 122.05917995316932, 425.4626887250995, 141.35742556720442, 453.53286416369605, 357.1468992514151, 120.19953083036248, 408.0240922338713, 418.4451448654504, 502.7609343391345, 230.72584661983626, 771.1819869707135]] }, "DESERT": { "color": "#efea94", "polygons": [] }, "LAVA": { "color": "#ff6600", "polygons": [] }, "VOLCANO_PLANE": { "color": "#403333", "polygons": [] }, "VOLCANO_PEAK": { "color": "#352a2a", "polygons": [] }, "MOUNTAIN": { "color": "#6b7772", "polygons": [] }, "GLAZIER": { "color": "#baddf0", "polygons": [] }, "SAVANA": { "color": "#a3b471", "polygons": [] }, "BEACH": { "color": "#eff8b3", "polygons": [] }, "CAVE": { "color": "#b0b0b0", "polygons": [] }, "ICE_WATER": { "color": "#448bb0", "polygons": [] }, "TIAGA": { "color": "#609276", "polygons": [] } }
 
 const vertices: number[] = [];
 const colours: string[] = [];
 const colorMap: string[] = [];
-function parseMap(){
+function parseMap() {
   mapData.OCEAN.polygons.forEach(polygon => {
     const _vertices = earcut(polygon);
     const newVertices: number[] = [];
-    for(let i = 0; i < _vertices.length; i++){
+    for (let i = 0; i < _vertices.length; i++) {
       const offset = _vertices[i];
       newVertices[i * 2 + 0] = polygon[offset * 2 + 0];
       newVertices[i * 2 + 1] = polygon[offset * 2 + 1];
@@ -63,7 +67,7 @@ function parseMap(){
     vertices.push(...newVertices);
 
 
-    for(let i = 0; i < vertices.length / 6; i++){
+    for (let i = 0; i < vertices.length / 6; i++) {
       colours.push(mapData.OCEAN.color);
     }
   })
@@ -110,6 +114,7 @@ export function GameClient_init() {
   uiScene.add(Hotbar_root)
   repositionUI();
   initDecoration();
+  Debug_init();
 }
 
 GameClient_init();
@@ -422,10 +427,12 @@ export function GameClient_unpackInventory() {
 
 export function GameClient_unpackHealth() {
   const health = inStream.readU16();
-  const food = inStream.readU16();
   const hunger = inStream.readU16();
+  const temperature = inStream.readU16();
 
   healthBar.setFill(health / 100);
+  temperateBar.setFill(temperature / 100);
+  hungerBar.setFill(hunger / 100);
 }
 
 export function GameClient_unpackDied() {

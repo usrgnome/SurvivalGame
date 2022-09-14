@@ -1,30 +1,27 @@
 import World from "../Game/GameWorld";
 import ObjectManager from "../../../shared/lib/ObjectManager";
-import { WebSocket } from "ws";
+import { WebSocket } from "uWebSockets.js";
 import { Client } from "./Client";
 import { SERVER_HEADER } from "../../../shared/headers";
-import { C_Health, C_Inventory } from "../Game/ECS/Components";
+import { C_Health, C_Hunger, C_Inventory, C_Temperature } from "../Game/ECS/Components";
 import { WebSocketServer } from 'ws';
 import GameWorld from "../Game/GameWorld";
+import { logger, loggerLevel } from "./Logger";
+import { SocketServer } from "./SocketServer";
 
 export default class GameServer {
   clients: ObjectManager<Client> = new ObjectManager;
   gameWorld: GameWorld = new GameWorld;
   tickRate: number = 15;
   leaderboardTicks = 0;
+  socketServer: SocketServer;
 
   constructor(port: number) {
+    this.socketServer = new SocketServer(port, this);
+
     setInterval(() => {
       this.tick();
     }, 1000 / this.tickRate);
-
-    const gameServer = this;
-    const wss = new WebSocketServer({ port });
-    wss.on('connection', function connection(ws) {
-      ws.binaryType = "arraybuffer";
-      ws.send("ready");
-      gameServer.addClient(ws);
-    });
 
     this.gameWorld._on('entityRemoved', (e) => {
       const { cid, eid } = e;
@@ -44,13 +41,33 @@ export default class GameServer {
 
       if (this.clients.has(cid)) {
         const client = this.clients.find(cid);
-        this.updateStats(client, health, 0, 0);
+
+        const hunger = C_Hunger.hunger[eid];
+        const temperate = C_Temperature.temperate[eid];
+
+        this.updateStats(client, health, hunger, temperate);
       }
     });
 
     this.gameWorld._on('hitBounce', (e) => {
       const { eid, angle } = e;
       this.hitBouceEffect(eid, angle);
+    });
+
+    this.gameWorld._on('tickStats', (e) => {
+      const clients = this.clients.array;
+      for (let u = 0; u < clients.length; u++) {
+        const client = clients[u];
+        if (!client.ready) continue;
+        const eid = client.eid;
+        if(!this.gameWorld.isEntityActive(eid)) continue;
+
+
+        const hunger = C_Hunger.hunger[eid];
+        const temperate = C_Temperature.temperate[eid];
+        const health = C_Health.health[eid];
+        this.updateStats(client, health, hunger, temperate);
+      }
     });
   }
 
@@ -98,8 +115,6 @@ export default class GameServer {
     const client = new Client(this, socket);
     this.clients.insert(client);
     client.onceReady();
-
-    console.log(`[Server] Client (${client.id}) connected!`);
   }
 
   /**
@@ -108,7 +123,6 @@ export default class GameServer {
    * @memberof GameServer
    */
   removeClient(client: Client) {
-    console.log(`[Server] Client (${client.id}) disconnected!`);
     this.clients.remove(client);
   }
 
@@ -134,7 +148,13 @@ export default class GameServer {
 
     ownerClient.stream.writeU8(SERVER_HEADER.SET_OUR_ENTITY);
     ownerClient.stream.writeLEB128(ownerClient.eid);
-    this.updateStats(ownerClient, C_Health.health[ownerClient.eid], 0, 0);
+
+    const eid = ownerClient.eid;
+    const health = C_Health.health[eid];
+    const hunger = C_Hunger.hunger[eid];
+    const temperate = C_Temperature.temperate[eid];
+
+    this.updateStats(ownerClient, health, hunger, temperate);
     this.sendInventory(ownerClient.eid, ownerClient);
     ownerClient.flushStream();
   }
@@ -224,7 +244,6 @@ export default class GameServer {
   }
 
   updateStats(client: Client, health: number, food: number, hunger: number) {
-    console.log("Packing health into the buffer");
     const stream = client.stream;
     stream.writeU8(SERVER_HEADER.HEALTH);
     stream.writeU16(health);

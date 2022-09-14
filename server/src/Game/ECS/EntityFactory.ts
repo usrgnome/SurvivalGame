@@ -3,10 +3,11 @@ import { Bodies, Body, Vector } from "matter-js";
 import { networkTypes, types } from "../../../../shared/EntityTypes";
 import { ITEM } from "../../../../shared/Item";
 import { collisionLayer } from "../../server/config";
-import { C_AttackTimer, C_Base, C_Body, C_ClientHandle, C_Controls, C_GivesScore, C_Health, C_HitBouceEffect, C_Inventory, C_Leaderboard, C_Mob, C_Mouse, C_Position, C_Rotation, C_TerrainInfo } from "./Components";
+import { C_AttackTimer, C_Base, C_Body, C_Breath, C_ClientHandle, C_Controls, C_GivesScore, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Leaderboard, C_Mob, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo } from "./Components";
 import GameWorld from "../GameWorld";
 import { Inventory_addItem } from "../Inventory";
 
+export const NULL_ENTITY = -1;
 
 function createEID(gameWorld: GameWorld, type: number) {
     const eid = addEntity(gameWorld.world);
@@ -52,6 +53,9 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     addComponent(gameWorld.world, C_AttackTimer, eid, true);
     addComponent(gameWorld.world, C_Inventory, eid, true);
     addComponent(gameWorld.world, C_Health, eid, true);
+    addComponent(gameWorld.world, C_Hunger, eid, true);
+    addComponent(gameWorld.world, C_Breath, eid, true);
+    addComponent(gameWorld.world, C_Temperature, eid, true);
     addComponent(gameWorld.world, C_Mouse, eid, true);
     addComponent(gameWorld.world, C_Leaderboard, eid, true);
     addComponent(gameWorld.world, C_GivesScore, eid, true);
@@ -62,7 +66,6 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
         C_ClientHandle.cid[eid] = clientId;
     }
 
-    C_GivesScore.deathScore[eid] = 1;
 
     const body = Bodies.circle(0, 0, 50, {
         inertia: Infinity,
@@ -85,7 +88,11 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     Body.setPosition(body, Vector.create(x, y));
 
     C_Health.health[eid] = C_Health.maxHealth[eid] = 100;
+    C_Hunger.hunger[eid] = C_Hunger.maxHunger[eid] = 100;
+    C_Breath.breath[eid] = C_Breath.maxBreath[eid] = 100;
+    C_Temperature.temperate[eid] = 100;
     C_Controls.vel[eid] = 0.100;
+    C_GivesScore.deathScore[eid] = 1;
 
     Inventory_addItem(eid, ITEM.SWORD, 1);
     return eid;

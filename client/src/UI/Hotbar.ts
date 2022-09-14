@@ -47,12 +47,12 @@ class Bar {
   }
 }
 
-export const coldBar = new Bar(SPRITE.COLD_BAR, "blue");
-export const foodBar = new Bar(SPRITE.FOOD_BAR, "red");
+export const temperateBar = new Bar(SPRITE.COLD_BAR, "blue");
+export const hungerBar = new Bar(SPRITE.FOOD_BAR, "red");
 export const healthBar = new Bar(SPRITE.HEALTH_BAR, "green");
 
-root.add(coldBar.root);
-root.add(foodBar.root);
+root.add(temperateBar.root);
+root.add(hungerBar.root);
 root.add(healthBar.root);
 
 
@@ -117,12 +117,12 @@ function reposition() {
 
   const barGap = 50;
   const height = -50;
-  healthBar.root.position.x = renderer.scaledWidth * .5 - coldBar.bar.frame.size.x * coldBar.bar.frame.scale.x - barGap;
+  healthBar.root.position.x = renderer.scaledWidth * .5 - temperateBar.bar.frame.size.x * temperateBar.bar.frame.scale.x - barGap;
   healthBar.root.position.y = height;
-  coldBar.root.position.x = renderer.scaledWidth * .5;
-  coldBar.root.position.y = height;
-  foodBar.root.position.x = renderer.scaledWidth * .5 + coldBar.bar.frame.size.x * coldBar.bar.frame.scale.x + barGap;
-  foodBar.root.position.y = height;
+  temperateBar.root.position.x = renderer.scaledWidth * .5;
+  temperateBar.root.position.y = height;
+  hungerBar.root.position.x = renderer.scaledWidth * .5 + temperateBar.bar.frame.size.x * temperateBar.bar.frame.scale.x + barGap;
+  hungerBar.root.position.y = height;
 }
 
 function updateSlot(slotIndex: number, itemId: number, quantity: number) {

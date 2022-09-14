@@ -1,5 +1,5 @@
 import GameServer from "./GameServer";
-import { WebSocket } from "ws";
+import { WebSocket } from "uWebSockets.js";
 import { StreamReader, StreamWriter } from "../../../shared/lib/StreamWriter";
 import { CLIENT_HEADER, SERVER_HEADER } from "../../../shared/headers";
 import { C_Base, C_ClientHandle, C_Controls, C_Health, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds } from "../Game/ECS/Components";
@@ -7,8 +7,8 @@ import { ITEM, Items } from "../../../shared/Item";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { networkTypes, types } from "../../../shared/EntityTypes";
 import { resetHealth } from "../Game/health";
-import {modulo} from "../../../shared/Utilts";
-import { createPlayer } from "../Game/ECS/EntityFactory";
+import { modulo } from "../../../shared/Utilts";
+import { createPlayer, NULL_ENTITY } from "../Game/ECS/EntityFactory";
 
 const TMP_ENTITY_MANAGER: Map<number, boolean> = new Map();
 
@@ -30,16 +30,14 @@ export class Client {
   visibleEntities = new EntityIdManager();
 
   constructor(server: GameServer, socket: WebSocket) {
+    socket.client = this;
     this.server = server;
     this.socket = socket;
-
-    this.socket.on("message", (data, isBinary) => this.onBinaryData(data as ArrayBuffer));
-    this.socket.on("close", () => this.onSocketClose());
   }
 
   flushStream() {
     if (this.stream.ptr === 0) return;
-    this.socket.send(this.stream.bytes());
+    this.socket.send(this.stream.bytes(), true, true);
     this.stream.reset();
   }
 
@@ -89,7 +87,7 @@ export class Client {
       const body = bodies[i];
       // @ts-ignore
       const eid = body.eid as number;
-      if (eid === -1) continue;
+      if (eid === NULL_ENTITY) continue;
 
       if (this.visibleEntities.has(eid)) {
         // update
@@ -130,14 +128,15 @@ export class Client {
     TMP_ENTITY_MANAGER.clear();
   }
 
-  onSocketClose() {
+  onSocketClose(code: number, message: ArrayBuffer) {
     this.ready = false;
-    if (this.eid !== -1) this.server.gameWorld.deleteEntity(this.eid);
-    this.eid = -1;
+    if (this.eid !== NULL_ENTITY)
+      this.server.gameWorld.deleteEntity(this.eid);
+    this.eid = NULL_ENTITY;
     this.server.removeClient(this);
   }
 
-  onBinaryData(data: ArrayBuffer) {
+  onSocketMessage(data: ArrayBuffer, isBinary: boolean) {
     const inStream = this.inStream;
 
     if (data.byteLength > 50) return; // drop packets over N  bytes in length
@@ -155,7 +154,8 @@ export class Client {
           this.onInput();
           break;
         case CLIENT_HEADER.MOUSE_UP: {
-          if (this.eid !== -1) C_Mouse.mouseDown[this.eid] = +false;
+          if (this.eid !== NULL_ENTITY)
+            C_Mouse.mouseDown[this.eid] = +false;
           break;
         }
         case CLIENT_HEADER.INVENTORY: {
@@ -163,21 +163,20 @@ export class Client {
           const eid = this.eid;
           const itemId = C_Inventory.items[eid][slotId];
           this.server.gameWorld.changeEntityItem(eid, itemId);
-         break; 
+          break;
         }
         case CLIENT_HEADER.CHAT: {
-          if(!this.ready) return inStream.skipPacket();
+          if (!this.ready) return inStream.skipPacket();
           const message = inStream.readString();
           this.server.sendChat(this.eid, message);
           break;
         }
         case CLIENT_HEADER.MOUSE_DOWN: {
           const angle = modulo(inStream.readF32(), Math.PI * 2);
-          if (this.eid !== -1) {
+          if (this.eid !== NULL_ENTITY) {
             C_Mouse.mouseDown[this.eid] = +true;
             this.server.gameWorld.setBodyRotation(this.eid, angle);
             C_Rotation.rotation[this.eid] = angle;
-            //C_Weilds.itemId[this.eid] = ITEM.SWORD;
           }
           break;
         }
@@ -191,6 +190,7 @@ export class Client {
   * description Called once a client has been added to the server
   */
   onceReady() {
+    this.socket.send("ready", false);
     this.eid = createPlayer(this.server.gameWorld, this.id);
     this.ready = true;
     this.server.sendClientInitilise(this);
@@ -213,7 +213,7 @@ export class Client {
     x *= invMag;
     y *= invMag;
 
-    if (this.eid !== -1) {
+    if (this.eid !== NULL_ENTITY) {
       C_Controls.x[this.eid] = x;
       C_Controls.y[this.eid] = y;
       C_Rotation.rotation[this.eid] = mouseRotation;
@@ -223,13 +223,11 @@ export class Client {
   onRequestSpawn() {
     if (this.server.gameWorld.isEntityActive(this.eid)) return;
     let nickname = this.inStream.readString();
-    if(nickname === "") nickname = "GameNickName:" + this.id;
+    if (nickname === "") nickname = "GameNickName:" + this.id;
     this.nickname = nickname;
 
     resetHealth(this.eid);
     this.server.gameWorld.addEntity(this.eid);
     this.server.playerSpawned(this);
-
-    console.log("Requested respawn!");
   }
 }

@@ -9,9 +9,6 @@ export function modulo(a: number, b: number): number {
   return (r * b < 0) ? r + b : r;
 }
 
-export function assert(condition: boolean, message: string = 'Assetion failed!') {
-  if (!condition) throw message;
-}
 
 
 export function angleDifference(a0: number, a1: number) {

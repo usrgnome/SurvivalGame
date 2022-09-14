@@ -1,9 +1,10 @@
 import { IWorld } from "bitecs";
 import World from "../GameWorld";
-import { attackTimerQuery, bodyQuery, controlQuery, healthQuery, hitBouceQuery, mobQuery, mouseQuery } from "./Queries";
-import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Mouse, C_Position, } from "./Components";
+import { attackTimerQuery, bodyQuery, controlQuery, healthQuery, hitBouceQuery, hungerQuery, mobQuery, mouseQuery, temperatureQuery } from "./Queries";
+import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Temperature, C_TerrainInfo, } from "./Components";
 import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
+import { NULL_ENTITY } from "./EntityFactory";
 
 export const bodySystem = (gameWorld: World, world: IWorld) => {
   const ents = bodyQuery(world)
@@ -35,6 +36,64 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
         gameWorld.startAttackTimer(eid, 200, 200);
       }
     }
+  }
+}
+
+export const hungerSystem = (gameWorld: World, world: IWorld) => {
+  const ents = hungerQuery(world);
+  for (let i = 0; i < ents.length; i++) {
+    const eid = ents[i]
+    if (!C_Base.active[eid] || !C_Base.alive[eid]) continue;
+    let hunger = C_Hunger.hunger[eid] - 10;
+
+    if (hunger <= 0) {
+      hunger = 0,
+        gameWorld.damage(eid, 10);
+    }
+
+    C_Hunger.hunger[eid] = hunger;
+  }
+}
+
+function exposeTemperature(temperature: number, targetTemp: number, maxChange: number) {
+  const dif = Math.abs(temperature - targetTemp);
+  const change = Math.min(dif, maxChange);
+  temperature += (targetTemp < temperature ? -1 : 1) * change;
+  return temperature;
+}
+
+export const temperateSystem = (gameWorld: World, world: IWorld) => {
+  const ents = temperatureQuery(world);
+  for (let i = 0; i < ents.length; i++) {
+    const eid = ents[i]
+    if (!C_Base.active[eid] || !C_Base.alive[eid]) continue;
+    const temperature = C_Temperature.temperate[eid];
+
+    // in water, and not on land
+    let isSwimming = C_TerrainInfo.inWaterCount[eid] > 0 && (C_TerrainInfo.onLandCount[eid] === 0);
+    let isOnSnow = C_TerrainInfo.onSnowCount[eid] > 0;
+    let isOnLava = C_TerrainInfo.onLavaCount[eid] > 0;
+    let isOnDesert = C_TerrainInfo.onDesertCount[eid] > 0;
+
+    let newTemperature = temperature;
+
+    /*
+    Temperature scale
+    100 (too hot)
+    50
+    0 (too cold)
+    */
+
+    if (isSwimming)
+      newTemperature = exposeTemperature(newTemperature, 20, 5);
+
+    if (isOnSnow)
+      newTemperature = exposeTemperature(newTemperature, 0, 10);
+
+    C_Temperature.temperate[eid] = Math.max(0, newTemperature);
+
+    if (newTemperature === 0)
+      gameWorld.damage(eid, 10);
   }
 }
 
