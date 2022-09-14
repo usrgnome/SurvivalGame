@@ -10,5 +10,5 @@
     "target": "es6",
     "esModuleInterop": true
   },
-  "include": ["server/**/*.ts", "**/*.tsx"]
+  "include": ["server/**/*.ts"]
 }
