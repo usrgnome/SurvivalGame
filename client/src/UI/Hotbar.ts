@@ -19,15 +19,19 @@ class Bar {
   bar: mSprite = new mSprite(Sprites[SPRITE.COLD_BAR]);
   fillSprite = new mBufferCanvas();
   fill: number = 1;
+
+  changeFill(fillColor: string){
+    const ctx = this.fillSprite.getCtx();
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(0, 0, this.fillSprite.frame.size.x, this.fillSprite.frame.size.y);
+  }
   // TODO, add the bar fill, whether should be a image or a buffer geometry
 
   constructor(spriteId: number, fillColor: string) {
     this.bar.frame = Sprites[spriteId];
 
     this.fillSprite.resize(270, 40);
-    const ctx = this.fillSprite.getCtx();
-    ctx.fillStyle = fillColor;
-    ctx.fillRect(0, 0, this.fillSprite.frame.size.x, this.fillSprite.frame.size.y);
+    this.changeFill(fillColor);
 
     this.fillSprite.position.x = -this.bar.frame.size.x * .5 * this.bar.frame.scale.x + 30;
     this.fillSprite.position.y = -this.bar.frame.size.y * .5 * this.bar.frame.scale.y + 10;
@@ -39,6 +43,14 @@ class Bar {
   setFill(fill: number) {
     this.fill = fill;
     this.fillSprite.scale.x = fill;
+
+    if(this.fill === 0.5){
+      this.changeFill("#aeeb34");
+    } else if(fill > 0.5) {
+      this.changeFill(lerpColor('#aeeb34', '#eb4334', (fill - 0.5) * 2));
+    } else {
+      this.changeFill(lerpColor('#aeeb34', '#349beb',  1 - (fill) * 2));
+    }
   }
 
   setPosition(x: number, y: number) {
@@ -55,6 +67,17 @@ root.add(temperateBar.root);
 root.add(hungerBar.root);
 root.add(healthBar.root);
 
+function lerpColor(a: string, b: string, amount: number) {
+  var ah = parseInt(a.replace(/#/g, ''), 16),
+    ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
+    bh = parseInt(b.replace(/#/g, ''), 16),
+    br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
+    rr = ar + amount * (br - ar),
+    rg = ag + amount * (bg - ag),
+    rb = ab + amount * (bb - ab);
+
+  return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
+}
 
 for (let i = 0; i < totalSlots; i++) {
   const sprite = new mSprite(Sprites[SPRITE.SLOT]);

@@ -3,10 +3,9 @@ import { WebSocket } from "uWebSockets.js";
 import { StreamReader, StreamWriter } from "../../../shared/lib/StreamWriter";
 import { CLIENT_HEADER, SERVER_HEADER } from "../../../shared/headers";
 import { C_Base, C_ClientHandle, C_Controls, C_Health, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds } from "../Game/ECS/Components";
-import { ITEM, Items } from "../../../shared/Item";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { networkTypes, types } from "../../../shared/EntityTypes";
-import { resetHealth } from "../Game/health";
+import { resetPLayerStats } from "../Game/health";
 import { modulo } from "../../../shared/Utilts";
 import { createPlayer, NULL_ENTITY } from "../Game/ECS/EntityFactory";
 
@@ -20,12 +19,12 @@ export class Client {
   isStatsDirty: boolean = false;
 
   id: number = -1;
-  eid: number = -1;
+  eid: number = NULL_ENTITY;
   server: GameServer;
   socket: WebSocket;
   stream: StreamWriter = new StreamWriter();
   private inStream = new StreamReader();
-  nickname: string = "Player#" + Math.floor(Math.random() * 999);
+  nickname: string = "";
   ready: boolean = false;
   visibleEntities = new EntityIdManager();
 
@@ -46,8 +45,8 @@ export class Client {
     const y = C_Position.y[this.eid];
 
 
-    const screenX = 1920;
-    const screenY = 1080;
+    const screenX = 1920 * 1.5;
+    const screenY = 1080 * 1.5;
 
     const bodies = this.server.gameWorld.queryRect(
       x - screenX * .5,
@@ -175,13 +174,12 @@ export class Client {
           const angle = modulo(inStream.readF32(), Math.PI * 2);
           if (this.eid !== NULL_ENTITY) {
             C_Mouse.mouseDown[this.eid] = +true;
-            this.server.gameWorld.setBodyRotation(this.eid, angle);
             C_Rotation.rotation[this.eid] = angle;
           }
           break;
         }
         default:
-          throw "u" + header;
+          throw "unknown header!" + header;
       }
     }
   }
@@ -226,7 +224,7 @@ export class Client {
     if (nickname === "") nickname = "GameNickName:" + this.id;
     this.nickname = nickname;
 
-    resetHealth(this.eid);
+    resetPLayerStats(this.eid);
     this.server.gameWorld.addEntity(this.eid);
     this.server.playerSpawned(this);
   }

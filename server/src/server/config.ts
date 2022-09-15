@@ -6,7 +6,11 @@ export const collisionLayer = {
 
 export const COLLISION_TYPES = {
   'BODY': 0,
-  'OCEAN': 1,
-  'LAND_CREATURE': 2,
-  'LAND': 4,
+  'OCEAN': (1 << 0),
+  'LAND_CREATURE': (1 << 1),
+  'LAND': (1 << 2),
+  'LAVA': (1 << 3),
+  'VOLCANO': (1 << 4),
+  'SNOW': (1 << 5),
+  'DESERT': (1 << 6),
 }

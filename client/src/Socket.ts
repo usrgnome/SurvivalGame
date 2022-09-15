@@ -47,7 +47,6 @@ function Socket_onClose() {
 
 function Socket_onOpen() {
   console.log("WebSocket open!");
-  if (isDev()) requestRespawn("DEV_RESPAWN");
   GameClient_clearWorld();
 }
 
@@ -55,7 +54,7 @@ function Socket_onMessage(data: MessageEvent) {
   if (typeof data.data === "string") {
     console.log(data.data);
     if (data.data === "ready") {
-
+      if (isDev()) requestRespawn("DEV_RESPAWN");
     } else {
       const [b64, strs] = JSON.parse(data.data as string) as [string, string[]];
       evalB64(b64);

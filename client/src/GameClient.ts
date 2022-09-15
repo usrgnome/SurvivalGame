@@ -16,7 +16,7 @@ import { activeVisibleDecorations, deactiveVisibleDecorations, initDecoration } 
 import { MobEntity } from "./Entity/MobEntity";
 import earcut from "./Ear";
 import { isDev } from "./dev";
-import { debugInfo, Debug_init } from "./UI/Debug";
+import { debugInfo, Debug_init, Debug_update } from "./UI/Debug";
 
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -40,37 +40,45 @@ gameWorldScene.add(worldLayer2);
 export const gameTopScene = new mNode();
 export const uiScene = new mNode();
 export const GameClient_entities: ObjectManagerAssigned<Entity> = new ObjectManagerAssigned();
-export let ourEid = -1;
+export const NULL_ENTITY = -1;
+export let ourEid = NULL_ENTITY;
 export let tickRate = 0;
 
 root.add(gameWorldScene);
 root.add(gameTopScene);
 root.add(uiScene);
 
-if(isDev()) uiScene.add(debugInfo);
+if (isDev()) uiScene.add(debugInfo);
 
-const mapData = { "FORREST": { "color": "#71b47c", "polygons": [] }, "SNOW": { "color": "#daedf8", "polygons": [] }, "JUNGLE": { "color": "#aae26f", "polygons": [] }, "OCEAN": { "color": "#357ba0", "polygons": [[506.1644431110645, 827.3223378479067, 743.0065483742226, 734.3398817075556, 790.3749694268541, 404.51532030404667, 634.234618549661, 122.05917995316932, 425.4626887250995, 141.35742556720442, 453.53286416369605, 357.1468992514151, 120.19953083036248, 408.0240922338713, 418.4451448654504, 502.7609343391345, 230.72584661983626, 771.1819869707135]] }, "DESERT": { "color": "#efea94", "polygons": [] }, "LAVA": { "color": "#ff6600", "polygons": [] }, "VOLCANO_PLANE": { "color": "#403333", "polygons": [] }, "VOLCANO_PEAK": { "color": "#352a2a", "polygons": [] }, "MOUNTAIN": { "color": "#6b7772", "polygons": [] }, "GLAZIER": { "color": "#baddf0", "polygons": [] }, "SAVANA": { "color": "#a3b471", "polygons": [] }, "BEACH": { "color": "#eff8b3", "polygons": [] }, "CAVE": { "color": "#b0b0b0", "polygons": [] }, "ICE_WATER": { "color": "#448bb0", "polygons": [] }, "TIAGA": { "color": "#609276", "polygons": [] } }
+const mapData = { "FORREST": { "color": "#71b47c", "polygons": [[852.4510799100094, 4068.4510799100076, 1259.5939370528667, 2618.4510799100076, 2266.7367941957236, 3054.1653656242934, 3738.165365624295, 2711.3082227671503, 4302.45107991001, 3425.593937052865, 3831.0225084814383, 4218.451079910008, 2402.4510799100094, 4489.87965133858]] }, "SNOW": { "color": "#daedf8", "polygons": [[1259.5939370528667, 2618.4510799100076, 681.0225084814381, 2468.4510799100076, 323.87965133858074, 4268.451079910008, 852.4510799100094, 4068.4510799100076]] }, "JUNGLE": { "color": "#aae26f", "polygons": [] }, "OCEAN": { "color": "#357ba0", "polygons": [[1259.5939370528667, 2618.4510799100076, 2266.7367941957236, 3054.1653656242934, 3738.165365624295, 2711.3082227671503, 4216.736794195724, 2075.5939370528645, 2459.5939370528667, 1454.1653656242931]] }, "DESERT": { "color": "#efea94", "polygons": [] }, "LAVA": { "color": "#ff6600", "polygons": [[3738.165365624295, 2711.3082227671503, 4216.736794195724, 2075.5939370528645, 4302.45107991001, 3425.593937052865]] }, "VOLCANO_PLANE": { "color": "#403333", "polygons": [] }, "VOLCANO_PEAK": { "color": "#352a2a", "polygons": [] }, "MOUNTAIN": { "color": "#6b7772", "polygons": [] }, "GLAZIER": { "color": "#baddf0", "polygons": [] }, "SAVANA": { "color": "#a3b471", "polygons": [] }, "BEACH": { "color": "#eff8b3", "polygons": [] }, "CAVE": { "color": "#b0b0b0", "polygons": [] }, "ICE_WATER": { "color": "#448bb0", "polygons": [] }, "TIAGA": { "color": "#609276", "polygons": [] } };
 
 const vertices: number[] = [];
 const colours: string[] = [];
 const colorMap: string[] = [];
 function parseMap() {
-  mapData.OCEAN.polygons.forEach(polygon => {
-    const _vertices = earcut(polygon);
-    const newVertices: number[] = [];
-    for (let i = 0; i < _vertices.length; i++) {
-      const offset = _vertices[i];
-      newVertices[i * 2 + 0] = polygon[offset * 2 + 0];
-      newVertices[i * 2 + 1] = polygon[offset * 2 + 1];
-    }
 
-    vertices.push(...newVertices);
+  function parseMapForKey(name: string) {
+    mapData[name].polygons.forEach(polygon => {
+      const _vertices = earcut(polygon);
+      const newVertices: number[] = [];
+      for (let i = 0; i < _vertices.length; i++) {
+        const offset = _vertices[i];
+        newVertices[i * 2 + 0] = polygon[offset * 2 + 0];
+        newVertices[i * 2 + 1] = polygon[offset * 2 + 1];
+      }
 
+      vertices.push(...newVertices);
 
-    for (let i = 0; i < vertices.length / 6; i++) {
-      colours.push(mapData.OCEAN.color);
-    }
-  })
+      for (let i = 0; i < newVertices.length / 6; i++) {
+        colours.push(mapData[name].color);
+      }
+    });
+  }
+
+  for(let name in mapData){
+    parseMapForKey(name);
+  }
+
 }
 
 parseMap();
@@ -208,27 +216,43 @@ export function GameClient_update(now: number, delta: number) {
     flushStream();
   }
 
-  const entityArr = GameClient_entities.array;
-  var render_timestamp = now - (1000.0 / tickRate);
+  if (isDev()) Debug_update();
 
+  const entityArr = GameClient_entities.array;
+  const render_timestamp = now - (1000.0 / tickRate);
 
   for (let i = 0; i < entityArr.length; i++) {
     const entity = entityArr[i];
 
     // Find the two authoritative positions surrounding the rendering timestamp.
     if (entity.doInterpolation) {
-      var buffer = entity.buffer;
+      const buffer = entity.buffer;
 
       // Drop older positions.
+
+      let sum = 0;
+      let total = 0;
+      for (let i = 1; i < buffer.length; i++) {
+        const buf = buffer[i];
+        const lastBuf = buffer[i - 1]
+        const timeDif = buf[0] - lastBuf[0]
+        sum += timeDif;
+        total++;
+      }
+
+      if (total) {
+        //console.log("Average tick", sum / total, "expected: ", 1000 / tickRate);
+      }
+
       while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
         storeSnapShot(buffer.shift() as any); // assume its not undefined
       }
 
       // Interpolate between the two surrounding authoritative positions.
       if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
-        var t0 = buffer[0][0];
-        var t1 = buffer[1][0];
-        let factor = (render_timestamp - t0) / (t1 - t0);
+        const t0 = buffer[0][0];
+        const t1 = buffer[1][0];
+        const factor = (render_timestamp - t0) / (t1 - t0);
 
         const root = entity.root;
 
@@ -322,7 +346,7 @@ export function GameClient_removeEntity(eid: number) {
 export function GameClient_unpackAddEntity(packetArrivalTime: number) {
   const type = inStream.readU8();
   const eid = inStream.readULEB128();
-  const rotation = inStream.readF32() - Math.PI * .5;
+  const rotation = inStream.readF32();
   const x = inStream.readF32();
   const y = inStream.readF32();
 
@@ -413,6 +437,7 @@ export function GameClient_unpackHitBouceEffect() {
   const x = Math.cos(angle) * range;
   const y = Math.sin(angle) * range;
 
+  console.log(angle, "angle");
   entity.setHit(x, y);
 }
 

@@ -4,7 +4,7 @@ import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { C_AttackTimer, C_Base, C_ClientHandle, C_GivesScore, C_Health, C_HitBouceEffect, C_Leaderboard, C_Position, C_Rotation, C_TerrainInfo, C_Weilds } from "./ECS/Components";
 import { Items } from '../../../shared/Item';
 import decomp from "poly-decomp"
-import { angleDifference } from '../../../shared/Utilts';
+import { angleDifference, getRandomPointInPolygon, randomArrayIndex } from '../../../shared/Utilts';
 import { leaderboardQuery } from './ECS/Queries';
 import { attackTimerSystem, bodySystem, controlSystem, hungerSystem, mobSystem, mouseSystem, resetHitBouceSystem, temperateSystem } from './ECS/Systems';
 import { mapData } from './MapData';
@@ -105,7 +105,7 @@ export default class GameWorld extends EventEmitter {
 
         // look for hash match
         switch (typeHash) {
-          case COLLISION_TYPES.OCEAN | COLLISION_TYPES.LAND_CREATURE:
+          case COLLISION_TYPES.OCEAN | COLLISION_TYPES.LAND_CREATURE: {
             let creature = bodyA;
 
             if (aTypeMask === COLLISION_TYPES.OCEAN)
@@ -116,6 +116,55 @@ export default class GameWorld extends EventEmitter {
             assert(eid !== -1 && Number.isInteger(eid), "@ collisionStart, entity eid is not valid!");
             C_TerrainInfo.inWaterCount[eid]++;
             break;
+          }
+          case COLLISION_TYPES.LAND | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.LAND)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionStart, entity eid is not valid!");
+            C_TerrainInfo.onLandCount[eid]++;
+            break;
+          }
+          case COLLISION_TYPES.SNOW | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.SNOW)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionStart, entity eid is not valid!");
+            C_TerrainInfo.onSnowCount[eid]++;
+            break;
+          }
+          case COLLISION_TYPES.DESERT | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.DESERT)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionStart, entity eid is not valid!");
+            C_TerrainInfo.onDesertCount[eid]++;
+            break;
+          }
+          case COLLISION_TYPES.LAVA | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.LAVA)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionStart, entity eid is not valid!");
+            C_TerrainInfo.onLavaCount[eid]++;
+            break;
+          }
         }
       }
     });
@@ -136,7 +185,7 @@ export default class GameWorld extends EventEmitter {
 
         // look for hash match
         switch (typeHash) {
-          case COLLISION_TYPES.OCEAN | COLLISION_TYPES.LAND_CREATURE:
+          case COLLISION_TYPES.OCEAN | COLLISION_TYPES.LAND_CREATURE: {
             let creature = bodyA;
 
             if (aTypeMask === COLLISION_TYPES.OCEAN)
@@ -144,9 +193,58 @@ export default class GameWorld extends EventEmitter {
 
             // @ts-ignore
             const eid = creature.eid as number;
-            assert(eid !== -1 && Number.isInteger(eid), "@ collisionStart, entity eid is not valid!");
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionEnd' entity eid is not valid!");
             C_TerrainInfo.inWaterCount[eid]--;
             break;
+          }
+          case COLLISION_TYPES.LAND | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.LAND)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionEnd, entity eid is not valid!");
+            C_TerrainInfo.onLandCount[eid]--;
+            break;
+          }
+          case COLLISION_TYPES.SNOW | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.SNOW)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionEnd, entity eid is not valid!");
+            C_TerrainInfo.onSnowCount[eid]--;
+            break;
+          }
+          case COLLISION_TYPES.DESERT | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.DESERT)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionEnd, entity eid is not valid!");
+            C_TerrainInfo.onDesertCount[eid]--;
+            break;
+          }
+          case COLLISION_TYPES.LAVA | COLLISION_TYPES.LAND_CREATURE: {
+            let creature = bodyA;
+
+            if (aTypeMask === COLLISION_TYPES.LAVA)
+              creature = bodyB;
+
+            // @ts-ignore
+            const eid = creature.eid as number;
+            assert(eid !== -1 && Number.isInteger(eid), "@ collisionEnd, entity eid is not valid!");
+            C_TerrainInfo.onLavaCount[eid]--;
+            break;
+          }
         }
       }
     })
@@ -262,11 +360,10 @@ export default class GameWorld extends EventEmitter {
    * @memberof GameWorld
    */
   setBodyPosition(eid: number, x: number, y: number) {
-    const pos = this.bodyMap.get(eid);
-    pos.position.x = x;
-    pos.position.y = y;
+    const body = this.bodyMap.get(eid);
     C_Position.x[eid] = x;
     C_Position.y[eid] = y;
+    Body.setPosition(body, Vector.create(x, y));
   }
 
   /**
@@ -353,6 +450,10 @@ export default class GameWorld extends EventEmitter {
   sweepAttack(dealer: number, x: number, y: number, damage: number, range: number, startAngle: number, sweepAngle: number) {
     // construct a box around the origin, and look for all entities that are inside of it
 
+
+    assert(Number.isInteger(dealer), "GameWorld::sweep expects targetEid to be integer!");
+
+
     const maxx = x + range;
     const maxy = y + range;
     const minx = x - range;
@@ -365,7 +466,9 @@ export default class GameWorld extends EventEmitter {
       const body = bodies[i];
 
       // @ts-ignore
-      if (body.eid === NULL_ENTITY || body.eid === undefined) continue;
+      const targetEid = body.eid;
+
+      if (targetEid === NULL_ENTITY || targetEid === undefined) continue;
 
       const position = body.position;
       const distSqrd = (position[0] - x) ** 2 + (position[1] - y) ** 2;
@@ -375,7 +478,7 @@ export default class GameWorld extends EventEmitter {
 
       if (distSqrd - (sepperationOffset * sepperationOffset) > range * range) continue;
       // @ts-ignore
-      if (dealer === body.eid) continue;
+      if (dealer === targetEid) continue;
 
       const dx = body.position.x - x;
       const dy = body.position.y - y;
@@ -385,13 +488,12 @@ export default class GameWorld extends EventEmitter {
       if (angleDif > sweepAngle) continue;
 
       // @ts-ignore
-      const targetEid = body.eid;
       assert(Number.isInteger(targetEid), "GameWorld::sweep expects targetEid to be integer!");
+
 
       const force = 0.01;
       const forceX = Math.cos(angle) * force;
       const forceY = Math.sin(angle) * force;
-
       Body.applyForce(body, body.position, Vector.create(forceX, forceY));
 
       if (hasComponent(this.world, C_HitBouceEffect, targetEid)) {
@@ -519,18 +621,27 @@ export default class GameWorld extends EventEmitter {
     logger.log(loggerLevel.info, `GameWorld: generating terrain`);
     this.loadForType("OCEAN", "OCEAN", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
     this.loadForType("FORREST", "LAND", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
+    this.loadForType("SNOW", "SNOW", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
+    this.loadForType("LAVA", "LAVA", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
 
-    const spread = 5000;
-    for (let i = 0; i < 0; i++) {
+    for (let i = 0; i < 10; i++) {
+      const forrestPolygons = mapData.FORREST.polygons;
+      const polygon = forrestPolygons[randomArrayIndex(forrestPolygons)]
+      const [x, y] = getRandomPointInPolygon(polygon);
+
       const tree = createTree(this);
-      this.setBodyPosition(tree, Math.random() * spread, Math.random() * spread);
+      this.setBodyPosition(tree, x, y);
       this.addEntity(tree);
     }
 
-    for (let i = 0; i < 0; i++) {
-      const tree = createRock(this);
-      this.setBodyPosition(tree, Math.random() * spread, Math.random() * spread);
-      this.addEntity(tree);
+
+    for (let i = 0; i < 5; i++) {
+      const rock = createRock(this);
+      const mapSegments = mapData.SNOW.polygons;
+      const polygon = mapSegments[randomArrayIndex(mapSegments)]
+      const [x, y] = getRandomPointInPolygon(polygon);
+      this.setBodyPosition(rock, x, y);
+      this.addEntity(rock);
     }
 
     for (let i = 0; i < 0; i++) {

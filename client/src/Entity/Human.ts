@@ -237,7 +237,6 @@ export class HumanEntity extends Entity {
     this.body.saveState();
 
     if (this.delta > animationDurations[this.animationState] * 2) this.onAnimationOver();
-    this.nameLabel.updateText(`x: ${this.root.position.x}, y: ${this.root.position.y}`)
   };
 
   setRotation(rotation: number): void {

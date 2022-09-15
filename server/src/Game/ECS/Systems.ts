@@ -83,12 +83,23 @@ export const temperateSystem = (gameWorld: World, world: IWorld) => {
     50
     0 (too cold)
     */
+    
+    //console.log(`
+      //inWater: ${C_TerrainInfo.inWaterCount[eid]}
+      //onDesert: ${C_TerrainInfo.onDesertCount[eid]}
+      //onLand: ${C_TerrainInfo.onLandCount[eid]}
+      //onLava: ${C_TerrainInfo.onLavaCount[eid]}
+      //onSnow: ${C_TerrainInfo.onSnowCount[eid]}
+    //`);
 
     if (isSwimming)
       newTemperature = exposeTemperature(newTemperature, 20, 5);
 
     if (isOnSnow)
       newTemperature = exposeTemperature(newTemperature, 0, 10);
+
+    if (isOnLava)
+      newTemperature = exposeTemperature(newTemperature, 100, 10);
 
     C_Temperature.temperate[eid] = Math.max(0, newTemperature);
 

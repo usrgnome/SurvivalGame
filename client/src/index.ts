@@ -10,8 +10,6 @@ const stats = Stats();
 
 document.body.appendChild(stats.dom);
 
-console.log("Hello world!");
-
 function init() {
   initControls();
   GameClient_resize(); // automatically resize the canvas for the first time

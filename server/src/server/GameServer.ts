@@ -1,27 +1,25 @@
-import World from "../Game/GameWorld";
 import ObjectManager from "../../../shared/lib/ObjectManager";
 import { WebSocket } from "uWebSockets.js";
 import { Client } from "./Client";
 import { SERVER_HEADER } from "../../../shared/headers";
 import { C_Health, C_Hunger, C_Inventory, C_Temperature } from "../Game/ECS/Components";
-import { WebSocketServer } from 'ws';
 import GameWorld from "../Game/GameWorld";
-import { logger, loggerLevel } from "./Logger";
 import { SocketServer } from "./SocketServer";
+import NanoTimer from "./NanoTimer";
 
 export default class GameServer {
   clients: ObjectManager<Client> = new ObjectManager;
   gameWorld: GameWorld = new GameWorld;
   tickRate: number = 15;
   leaderboardTicks = 0;
+  lastUpdate: number = 0;
   socketServer: SocketServer;
 
   constructor(port: number) {
     this.socketServer = new SocketServer(port, this);
 
-    setInterval(() => {
-      this.tick();
-    }, 1000 / this.tickRate);
+    const timer = new NanoTimer(false);
+    timer.setInterval(() => this.tick(), '', Math.floor(1000 / this.tickRate) + 'm');
 
     this.gameWorld._on('entityRemoved', (e) => {
       const { cid, eid } = e;
@@ -62,7 +60,6 @@ export default class GameServer {
         const eid = client.eid;
         if(!this.gameWorld.isEntityActive(eid)) continue;
 
-
         const hunger = C_Hunger.hunger[eid];
         const temperate = C_Temperature.temperate[eid];
         const health = C_Health.health[eid];
@@ -76,9 +73,17 @@ export default class GameServer {
    * @memberof GameServer
    */
   tick() {
+    const tickStart = Date.now();
+    const now = Date.now();
+    const _delta = now - this.lastUpdate;
+    this.lastUpdate = now;
+
+    //console.log(_delta);
+
     const delta = (1000 / this.tickRate);
     this.gameWorld.update(delta);
 
+    const start = Date.now();
     this.leaderboardTicks++;
     if (this.leaderboardTicks > this.tickRate * 3) { // every 5 seconds
       this.updateLeaderboard(this.gameWorld.buildLeaderboard());
@@ -91,6 +96,10 @@ export default class GameServer {
       if (client.ready) client.buildSnapshot();
       client.flushStream();
     }
+    const end = Date.now();
+    //console.log("Syncing clients took: " + (end - start))
+    const tickEnd = Date.now();
+    //console.log("Tick took: " + (tickEnd- tickStart));
   }
 
   /**

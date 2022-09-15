@@ -113,7 +113,6 @@ export class mNode {
   scale = new mPoint(1, 1);
   pivot = new mPoint(0, 0);
   visible = true;
-
   dirty = false;
 
   sort() {
@@ -368,8 +367,8 @@ export class mRenderer {
       const geometry = bufferGeometry.geometry;
       // store points inside the geometry like...
       // X1, Y1, X2, Y2, X3, Y3
-      for (let i = 0; i < geometry.length; i += 6) {
-        const color = bufferGeometry.colours[i / 6];
+      for (let i = 0, idx = 0; i < geometry.length; i += 6, idx++) {
+        const color = bufferGeometry.colours[idx];
         const X1 = geometry[i + 0];
         const Y1 = geometry[i + 1];
 
