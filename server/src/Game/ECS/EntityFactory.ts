@@ -76,22 +76,22 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
         },
         friction: 0,
         density: 1,
+        frictionAir: 0.6,
     });
 
     // @ts-ignore
     body.eid = eid;
     gameWorld.bodyMap.set(eid, body);
 
-    const range = 500;
-    const x = range + (Math.random() * range - range * .5);
-    const y = range + (Math.random() * range - range * .5);
+    const x = 2950;
+    const y = 3334;
     Body.setPosition(body, Vector.create(x, y));
 
     C_Health.health[eid] = C_Health.maxHealth[eid] = 100;
     C_Hunger.hunger[eid] = C_Hunger.maxHunger[eid] = 100;
     C_Breath.breath[eid] = C_Breath.maxBreath[eid] = 100;
     C_Temperature.temperate[eid] = 100;
-    C_Controls.vel[eid] = 0.100;
+    C_Controls.vel[eid] = 0.200;
     C_GivesScore.deathScore[eid] = 1;
 
     Inventory_addItem(eid, ITEM.SWORD, 1);

@@ -587,7 +587,8 @@ export default class GameWorld extends EventEmitter {
 
     const physStart = Date.now();
 
-    Runner.run(this.runner, this.engine);
+    //Runner.tick(this.runner, this.engine, undefined);
+    Engine.update(this.engine, delta);
 
     const physEnd = Date.now();
     debug && console.log("Phys tick took: " + (physEnd - physStart) + "ms");

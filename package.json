@@ -4,10 +4,10 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev-web": "webpack serve --env development",
-    "dev-api": "nodemon server/src/index.ts --ignore 'client/'",
-    "build-web": "rm -rf ./client/build && webpack --env production",
-    "build-api": "webpack --config webpack.server.config.js --env production"
+    "dev-client": "webpack serve --env development",
+    "dev-server": "nodemon server/src/index.ts --ignore 'client/'",
+    "build-client": "rm -rf ./client/build && webpack --env production",
+    "build-server": "webpack --config webpack.server.config.js --env production"
   },
   "keywords": [],
   "author": "",

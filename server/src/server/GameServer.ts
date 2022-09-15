@@ -78,8 +78,6 @@ export default class GameServer {
     const _delta = now - this.lastUpdate;
     this.lastUpdate = now;
 
-    //console.log(_delta);
-
     const delta = (1000 / this.tickRate);
     this.gameWorld.update(delta);
 
