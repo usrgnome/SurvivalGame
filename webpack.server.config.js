@@ -2,14 +2,14 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
 const TerserPlugin = require('terser-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
 
 module.exports = function (env) {
   const isProduction = !!env.production;
   const isDevelopment = !isProduction;
 
   const config = {
-    target: ["web", "es2020"],
-    entry: path.join(__dirname, 'client/src/index.ts'),
+    entry: path.join(__dirname, 'server/src/index.ts'),
     mode: isProduction ? 'production' : 'development',
     optimization: {
       minimize: isProduction,
@@ -24,8 +24,7 @@ module.exports = function (env) {
             toplevel: true,
           },
           mangle: {
-            properties: true,
-            reserved: [/meta/, "meta"]
+            properties: false,
           },
           ecma: 2020,
           toplevel: true,
@@ -53,44 +52,16 @@ module.exports = function (env) {
       ],
     },
     resolve: {
-      extensions: ['.tsx', '.ts', '.js', 'scss'],
+      extensions: ['.tsx', '.ts', '.js'],
     },
     output: {
-      filename: '[contenthash].js',
-      path: path.resolve(__dirname, 'client/build'),
+      filename: 'server.js',
+      path: path.resolve(__dirname, 'server/build'),
     },
-    plugins: [
-      new HtmlWebpackPlugin({
-        inject: 'body',
-        template: path.join(__dirname, 'client/src/assets/index.html'),
-      }),
-      new CopyPlugin({
-        patterns: [
-          { from: "./client/src/assets/styles" },
-          { from: "./client/src/assets/fonts", to: "fonts/" },
-          { from: "./client/src/assets/img", to: "img/" },
-        ],
-      }),
-    ],
-  };
 
-  // if the process is run in development, start a proxy server to emulate the production environment
-  if (isDevelopment) {
-    config.devServer = {
-      static: {
-        directory: path.join(__dirname, 'client/build'),
-      },
-      compress: true,
-      port: 8080,
-      proxy: {
-        '/api': 'http://localhost:3000',
-        '/wss': {
-          target: 'http://localhost:9000',
-          ws: true,
-        }
-      },
-    };
-  }
+     externalsPresets: { node: true }, // in order to ignore built-in modules like path, fs, etc.
+    externals: [nodeExternals()], 
+  };
 
   return config;
 }
