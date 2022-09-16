@@ -37,6 +37,10 @@ export function Debug_update() {
     }
 }
 
+export function Debug_updateServerVersion(a: number, b: number, c: number){
+    someText.updateText(`SERVER VERSION: ${a}.${b}.${c}`);
+}
+
 export function Debug_updatePing(ping: number){
     pingText.updateText(ping + "ms");
 }

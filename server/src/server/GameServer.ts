@@ -6,6 +6,7 @@ import { C_Health, C_Hunger, C_Inventory, C_Temperature } from "../Game/ECS/Comp
 import GameWorld from "../Game/GameWorld";
 import { SocketServer } from "./SocketServer";
 import NanoTimer from "./NanoTimer";
+import { versionBits } from "./config";
 
 export default class GameServer {
   clients: ObjectManager<Client> = new ObjectManager;
@@ -230,6 +231,9 @@ export default class GameServer {
 
     initStream.writeU8(SERVER_HEADER.CONFIG);
     initStream.writeU8(this.tickRate);
+    initStream.writeU8(versionBits[0]);
+    initStream.writeU8(versionBits[1]);
+    initStream.writeU8(versionBits[2]);
 
     for (let i = 0; i < clients.length; i++) {
       const client = clients[i];

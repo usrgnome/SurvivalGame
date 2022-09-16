@@ -16,7 +16,7 @@ import { activeVisibleDecorations, deactiveVisibleDecorations, initDecoration } 
 import { MobEntity } from "./Entity/MobEntity";
 import earcut from "./Ear";
 import { isDev, isProd } from "./dev";
-import { debugInfo, Debug_init, Debug_update, Debug_updatePing } from "./UI/Debug";
+import { debugInfo, Debug_init, Debug_update, Debug_updatePing, Debug_updateServerVersion } from "./UI/Debug";
 
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -381,7 +381,12 @@ export function GameClient_unpackRemoveEntity() {
 
 export function GameClient_unpackConfig() {
   const _tickRate = inStream.readU8();
+  const versionBit1 = inStream.readU8();
+  const versionBit2 = inStream.readU8();
+  const versionBit3 = inStream.readU8();
+
   tickRate = _tickRate;
+  Debug_updateServerVersion(versionBit1, versionBit2, versionBit3);
 }
 
 export function GameClient_unpackSetOurEntity() {
