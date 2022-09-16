@@ -215,7 +215,7 @@ export function GameClient_update(now: number, delta: number) {
     flushStream();
   }
 
-  if (isDev()) Debug_update();
+  if (!isProd()) Debug_update();
   Hotbars_update(delta);
 
   const entityArr = GameClient_entities.array;
