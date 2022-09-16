@@ -14,6 +14,8 @@ export const SERVER_HEADER = {
   LEADERBOARD: 12,
   HEALTH: 13,
   CHAT: 14,
+  PING: 15,
+  PING_RESPONSE: 16,
 }
 
 export const CLIENT_HEADER = {
@@ -23,4 +25,5 @@ export const CLIENT_HEADER = {
   MOUSE_UP: 3,
   INVENTORY: 4,
   CHAT: 5,
+  PONG: 6,
 }

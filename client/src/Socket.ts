@@ -1,6 +1,6 @@
 import { CLIENT_HEADER, SERVER_HEADER } from "../../shared/headers";
 import { StreamReader, StreamWriter } from "../../shared/lib/StreamWriter";
-import { GameClient_clearWorld, GameClient_unpackAction, GameClient_unpackAddClient, GameClient_unpackAddEntity, GameClient_unpackChat, GameClient_unpackConfig, GameClient_unpackDied, GameClient_unpackHealth, GameClient_unpackHitBouceEffect, GameClient_unpackInventory, GameClient_unpackLeaderboard, GameClient_unpackRemoveEntity, GameClient_unpackSetOurEntity, GameClient_unpackSwapItem, GameClient_unpackUpdateEntity } from "./GameClient";
+import { GameClient_clearWorld, GameClient_unpackAction, GameClient_unpackAddClient, GameClient_unpackAddEntity, GameClient_unpackChat, GameClient_unpackConfig, GameClient_unpackDied, GameClient_unpackHealth, GameClient_unpackHitBouceEffect, GameClient_unpackInventory, GameClient_unpackLeaderboard, GameClient_unpackPing, GameClient_unpackPingResponse, GameClient_unpackRemoveEntity, GameClient_unpackSetOurEntity, GameClient_unpackSwapItem, GameClient_unpackUpdateEntity } from "./GameClient";
 import { evalB64 } from "./AntiBot";
 import { isDev } from "./dev";
 
@@ -107,6 +107,12 @@ function Socket_onMessage(data: MessageEvent) {
           break;
         case SERVER_HEADER.DIED:
           GameClient_unpackDied();
+          break;
+        case SERVER_HEADER.PING:
+          GameClient_unpackPing();
+          break;
+        case SERVER_HEADER.PING_RESPONSE:
+          GameClient_unpackPingResponse();
           break;
         case SERVER_HEADER.LEADERBOARD:
           GameClient_unpackLeaderboard();

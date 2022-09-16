@@ -18,6 +18,10 @@ export class Client {
   coldStats: number = 0;
   isStatsDirty: boolean = false;
 
+  pingSeqId: number = 0;
+  waitingForPingSeqId: number = -1;
+  pingTimestamp: number = 0;
+
   id: number = -1;
   eid: number = NULL_ENTITY;
   server: GameServer;
@@ -178,6 +182,9 @@ export class Client {
           }
           break;
         }
+        case CLIENT_HEADER.PONG:
+          this.onPong();
+          break;
         default:
           throw "unknown header!" + header;
       }
@@ -227,5 +234,28 @@ export class Client {
     resetPLayerStats(this.eid);
     this.server.gameWorld.addEntity(this.eid);
     this.server.playerSpawned(this);
+  }
+
+  onPong() {
+    const seqId = this.inStream.readU8();
+    if (seqId === this.waitingForPingSeqId) {
+      const now = Date.now();
+      const difference = now - this.pingTimestamp;
+      this.waitingForPingSeqId = -1;
+      this.sendPingTime(difference);
+    }
+  }
+
+  ping() {
+    this.stream.writeU8(SERVER_HEADER.PING);
+    this.stream.writeU8(this.pingSeqId);
+    this.waitingForPingSeqId = this.pingSeqId;
+    this.pingSeqId = (this.pingSeqId + 1) % 0xff;
+    this.pingTimestamp = Date.now();
+  }
+
+  sendPingTime(time: number) {
+    this.stream.writeU8(SERVER_HEADER.PING_RESPONSE);
+    this.stream.writeU16(time);
   }
 }

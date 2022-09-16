@@ -21,6 +21,14 @@ const positionText = new mText("0, 0", {
     baseLine: "top",
 });
 
+const pingText = new mText("WAITINGms", {
+    fontSize: 25,
+    fontFamily: fontName,
+    fill: "black",
+    align: "left",
+    baseLine: "top",
+});
+
 export function Debug_update() {
     if(ourEid !== NULL_ENTITY){
         const entity = GameClient_entities.find(ourEid);
@@ -29,11 +37,18 @@ export function Debug_update() {
     }
 }
 
+export function Debug_updatePing(ping: number){
+    pingText.updateText(ping + "ms");
+}
+
 export function Debug_init() {
     debugInfo.add(someText);
     debugInfo.add(positionText);
+    debugInfo.add(pingText);
     someText.position.x = 100;
     someText.position.y = 10;
     positionText.position.x = 100;
     positionText.position.y = 10 + someText.frame.size.y;
+    pingText.position.x = 100;
+    pingText.position.y = positionText.position.y + positionText.frame.size.y;
 }
