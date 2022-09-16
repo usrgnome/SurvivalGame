@@ -247,6 +247,7 @@ export class Client {
   }
 
   ping() {
+    if(this.waitingForPingSeqId !== -1) return;
     this.stream.writeU8(SERVER_HEADER.PING);
     this.stream.writeU8(this.pingSeqId);
     this.waitingForPingSeqId = this.pingSeqId;

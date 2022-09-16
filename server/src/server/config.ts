@@ -15,7 +15,7 @@ export const COLLISION_TYPES = {
   'DESERT': (1 << 6),
 }
 
-export const version = "20.1.69";
+export const version = "0.0.1";
 
 const split = version.split(".");
 export const versionBits = [parseInt(split[0]), parseInt(split[1]), parseInt(split[2])];
