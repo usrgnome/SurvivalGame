@@ -25,7 +25,7 @@ export function Inventory_canAddItem(entity: number, itemIdToInsert, insertQuant
   return false
 }
 
-export function Inventory_addItem(entity: number, itemToAdd: number, quantityToAdd: number) {
+export function Inventory_tryGiveItem(entity: number, itemToAdd: number, quantityToAdd: number) {
   const ar = C_Inventory.items[entity];
   for (let i = 0; i < ar.length; i += 2) {
     const itemId = ar[i + 0];

@@ -63,7 +63,7 @@ class Bar {
     this.fillSprite.scale.x = this.fill;
 
     if (this.type === temperatureBarType) {
-        this.changeFill(lerpColor('#349beb', '#eb4334', this.fill));
+        this.changeFill(lerpColor('#47a1b4', '#eb4334', this.fill));
       //if (this.fill === 0.5)
         //this.changeFill("#aeeb34");
       //else if (this.fill > 0.5)
@@ -75,8 +75,8 @@ class Bar {
 }
 
 export const temperateBar = new Bar(SPRITE.COLD_BAR, "blue", -5);
-export const hungerBar = new Bar(SPRITE.FOOD_BAR, "red", -4, 4);
-export const healthBar = new Bar(SPRITE.HEALTH_BAR, "green", 1, -5);
+export const hungerBar = new Bar(SPRITE.FOOD_BAR, "#b53217", -4, 4);
+export const healthBar = new Bar(SPRITE.HEALTH_BAR, "#62a859", 1, -5);
 
 temperateBar.type = temperatureBarType;
 

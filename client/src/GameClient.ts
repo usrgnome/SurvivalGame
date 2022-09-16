@@ -216,7 +216,6 @@ export function GameClient_update(now: number, delta: number) {
   }
 
   if (isDev()) Debug_update();
-  console.log(delta);
   Hotbars_update(delta);
 
   const entityArr = GameClient_entities.array;
@@ -230,7 +229,6 @@ export function GameClient_update(now: number, delta: number) {
       const buffer = entity.buffer;
 
       // Drop older positions.
-
       let sum = 0;
       let total = 0;
       for (let i = 1; i < buffer.length; i++) {

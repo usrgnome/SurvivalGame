@@ -5,7 +5,7 @@ import { ITEM } from "../../../../shared/Item";
 import { collisionLayer } from "../../server/config";
 import { C_AttackTimer, C_Base, C_Body, C_Breath, C_ClientHandle, C_Controls, C_GivesScore, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Leaderboard, C_Mob, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo } from "./Components";
 import GameWorld from "../GameWorld";
-import { Inventory_addItem } from "../Inventory";
+import { Inventory_tryGiveItem } from "../Inventory";
 
 export const NULL_ENTITY = -1;
 
@@ -94,7 +94,8 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     C_Controls.vel[eid] = 0.200;
     C_GivesScore.deathScore[eid] = 1;
 
-    Inventory_addItem(eid, ITEM.SWORD, 1);
+    Inventory_tryGiveItem(eid, ITEM.SWORD, 1);
+    Inventory_tryGiveItem(eid, ITEM.SPEAR, 1);
     return eid;
 }
 
