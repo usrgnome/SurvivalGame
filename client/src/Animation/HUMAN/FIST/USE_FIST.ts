@@ -1,7 +1,7 @@
 import { AnimEasing, AnimEnum, getAnim } from "../../AnimUtils";
 
 export const humanUseHandR = getAnim();
-humanUseHandR[AnimEnum.xOffset] = -40;
+humanUseHandR[AnimEnum.xOffset] = -30;
 humanUseHandR[AnimEnum.yOffset] = 30;
 humanUseHandR[AnimEnum.rotateStart] = -.3;
 humanUseHandR[AnimEnum.rotateEnd] = -.8;
@@ -16,7 +16,7 @@ humanUseHandR[AnimEnum.yTranslateDuration] = 0.2;
 
 
 export const humanUseHandL = getAnim();
-humanUseHandL[AnimEnum.xOffset] = 40;
+humanUseHandL[AnimEnum.xOffset] = 30;
 humanUseHandL[AnimEnum.yOffset] = 30;
 humanUseHandL[AnimEnum.rotateStart] = .3;
 humanUseHandL[AnimEnum.rotateEnd] = .8;
