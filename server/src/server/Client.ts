@@ -1,6 +1,5 @@
 import GameServer from "./GameServer";
 import { WebSocket } from "uWebSockets.js";
-import { StreamReader, StreamWriter } from "../../../shared/lib/StreamWriter";
 import { CLIENT_HEADER, SERVER_HEADER } from "../../../shared/headers";
 import { C_Base, C_ClientHandle, C_Controls, C_Health, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds } from "../Game/ECS/Components";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
@@ -8,8 +7,15 @@ import { networkTypes, types } from "../../../shared/EntityTypes";
 import { resetPLayerStats } from "../Game/health";
 import { modulo } from "../../../shared/Utilts";
 import { createPlayer, NULL_ENTITY } from "../Game/ECS/EntityFactory";
+import { BinaryTypes, BufferReader, BufferSchema, BufferWriter } from "../../../shared/lib/StreamUtils"
 
 const TMP_ENTITY_MANAGER: Map<number, boolean> = new Map();
+
+const requestRespawnSchema = new BufferSchema([BinaryTypes.str], { errorMessage: "invalid respawn packet!" })
+const inputSchema = new BufferSchema([BinaryTypes.u8, BinaryTypes.f32], { errorMessage: "invalid input packet!" })
+const inventorySchema = new BufferSchema([BinaryTypes.u8], { errorMessage: "invalid invetory packet!" })
+const chatSchema = new BufferSchema([BinaryTypes.str], { errorMessage: "invalid chat packet!" })
+const pongSchema = new BufferSchema([BinaryTypes.u8], { errorMessage: "invalid pong packet!" })
 
 export class Client {
 
@@ -26,8 +32,11 @@ export class Client {
   eid: number = NULL_ENTITY;
   server: GameServer;
   socket: WebSocket;
-  stream: StreamWriter = new StreamWriter();
-  private inStream = new StreamReader();
+  //stream: StreamWriter = new StreamWriter();
+  stream = new BufferWriter(0xFFFF);
+
+  //private inStream = new StreamReader();
+  private inStream = new BufferReader();
   nickname: string = "";
   ready: boolean = false;
   visibleEntities = new EntityIdManager();
@@ -39,7 +48,7 @@ export class Client {
   }
 
   flushStream() {
-    if (this.stream.ptr === 0) return;
+    if (this.stream.offset === 0) return;
     this.socket.send(this.stream.bytes(), true, true);
     this.stream.reset();
   }
@@ -151,9 +160,15 @@ export class Client {
       const header = inStream.readU8();
       switch (header) {
         case CLIENT_HEADER.REQUEST_RESPAWN:
+          try { requestRespawnSchema.validate(inStream); }
+          catch (e) { return; };
+
           this.onRequestSpawn();
           break;
         case CLIENT_HEADER.INPUT:
+          try { inputSchema.validate(inStream) }
+          catch (e) { return; };
+
           this.onInput();
           break;
         case CLIENT_HEADER.MOUSE_UP: {
@@ -162,6 +177,9 @@ export class Client {
           break;
         }
         case CLIENT_HEADER.INVENTORY: {
+          try { inventorySchema.validate(inStream); }
+          catch (e) { return; };
+
           const slotId = inStream.readU8() * 2;
           const eid = this.eid;
           const itemId = C_Inventory.items[eid][slotId];
@@ -169,6 +187,9 @@ export class Client {
           break;
         }
         case CLIENT_HEADER.CHAT: {
+          try { chatSchema.validate(inStream); }
+          catch (e) { return; };
+
           if (!this.ready) return inStream.skipPacket();
           const message = inStream.readString();
           this.server.sendChat(this.eid, message);
@@ -183,6 +204,9 @@ export class Client {
           break;
         }
         case CLIENT_HEADER.PONG:
+          try { pongSchema.validate(inStream); }
+          catch (e) { return; };
+
           this.onPong();
           break;
         default:
@@ -239,15 +263,18 @@ export class Client {
   onPong() {
     const seqId = this.inStream.readU8();
     if (seqId === this.waitingForPingSeqId) {
+      this.waitingForPingSeqId = -1;
+
       const now = Date.now();
       const difference = now - this.pingTimestamp;
-      this.waitingForPingSeqId = -1;
-      this.sendPingTime(difference);
+
+      // Cap the difference to 65535 (uint16 max size), to prevent overflow error
+      this.sendPingTime(Math.min(difference, 0xFFFF));
     }
   }
 
   ping() {
-    if(this.waitingForPingSeqId !== -1) return;
+    if (this.waitingForPingSeqId !== -1) return;
     this.stream.writeU8(SERVER_HEADER.PING);
     this.stream.writeU8(this.pingSeqId);
     this.waitingForPingSeqId = this.pingSeqId;

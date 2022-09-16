@@ -67,7 +67,7 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     }
 
 
-    const body = Bodies.circle(0, 0, 50, {
+    const body = Bodies.circle(0, 0, 40, {
         inertia: Infinity,
         label: 'LAND_CREATURE',
         collisionFilter: {
@@ -83,8 +83,8 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     body.eid = eid;
     gameWorld.bodyMap.set(eid, body);
 
-    const x = 2950;
-    const y = 3334;
+    const x = 5000;
+    const y = 5000;
     Body.setPosition(body, Vector.create(x, y));
 
     C_Health.health[eid] = C_Health.maxHealth[eid] = 100;

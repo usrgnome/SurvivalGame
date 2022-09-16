@@ -377,6 +377,10 @@ export default class GameWorld extends EventEmitter {
     Body.setPosition(body, Vector.create(x, y));
   }
 
+  getBody(eid: number): Body {
+    return this.bodyMap.get(eid);
+  }
+
   /**
    * Sets the rotation of a entities body
    * @param {number} eid
@@ -423,7 +427,7 @@ export default class GameWorld extends EventEmitter {
   }
 
   isStructureAbleToBePlaced(body: Body) {
-
+    return this.queryBodyPrecise(body).length === 1;
   }
 
   private onEntityDie(eid: number) {
@@ -638,8 +642,8 @@ export default class GameWorld extends EventEmitter {
 
     logger.log(loggerLevel.info, `GameWorld: generating world`);
 
-    const width = 5000;
-    const height = 5000;
+    const width = 10000;
+    const height = 10000;
     const borderThickness = 100;
 
     const wall1 = Bodies.rectangle(width * .5, -borderThickness, width, borderThickness, {isStatic: true});
@@ -663,14 +667,36 @@ export default class GameWorld extends EventEmitter {
     this.loadForType("LAVA", "LAVA", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
 
     logger.log(loggerLevel.info, `GameWorld: spawning map entities`);
-    for (let i = 0; i < 10; i++) {
+
+    for (let i = 0; i < 50; i++) {
       const forrestPolygons = mapData.FORREST.polygons;
       const polygon = forrestPolygons[randomArrayIndex(forrestPolygons)]
-      const [x, y] = getRandomPointInPolygon(polygon);
+
 
       const tree = createTree(this);
+      const body = this.getBody(tree);
+
+      do {
+      let [x, y] = getRandomPointInPolygon(polygon);
       this.setBodyPosition(tree, x, y);
+      } while(!this.isStructureAbleToBePlaced(body));
+
       this.addEntity(tree);
+    }
+
+    for (let i = 0; i < 30; i++) {
+      const forrestPolygons = mapData.FORREST.polygons;
+      const polygon = forrestPolygons[randomArrayIndex(forrestPolygons)]
+
+      const rock = createRock(this);
+      const body = this.getBody(rock);
+
+      do {
+      let [x, y] = getRandomPointInPolygon(polygon);
+      this.setBodyPosition(rock, x, y);
+      } while(!this.isStructureAbleToBePlaced(body));
+
+      this.addEntity(rock);
     }
 
 

@@ -199,7 +199,7 @@ export default class GameServer {
         const cid = lbData[u][0];
         const score = lbData[u][1];
         stream.writeU16(cid);
-        stream.writeI32(score);
+        stream.writeU32(score);
       }
     }
   }

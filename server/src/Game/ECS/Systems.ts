@@ -143,9 +143,13 @@ export const controlSystem = (gameWorld: World, world: IWorld, delta: number) =>
     if (!C_Base.active[eid] || !C_Base.alive[eid]) continue;
     const vel = C_Controls.vel[eid];
     const body = gameWorld.bodyMap.get(eid) as Body;
-    const v = 0.01;
-    const x = C_Controls.x[eid] * vel * delta;
-    const y = C_Controls.y[eid] * vel * delta;
+
+    let isSwimming = C_TerrainInfo.inWaterCount[eid] > 0 && C_TerrainInfo.onLandCount[eid] === 0;
+
+    let swimFactor = 0.3;
+    let movementFactor = isSwimming ? swimFactor : 1;
+    const x = C_Controls.x[eid] * vel * delta * movementFactor;
+    const y = C_Controls.y[eid] * vel * delta * movementFactor;
     Body.applyForce(body, body.position, Vector.create(x, y));
   }
 }

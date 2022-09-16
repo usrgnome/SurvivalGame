@@ -434,11 +434,12 @@ export class mRenderer {
         const Y3 = geometry[i + 5];
 
         ctx.beginPath();
-        ctx.fillStyle = color;
+        ctx.strokeStyle = ctx.fillStyle = color;
         ctx.moveTo(X1, Y1);
         ctx.lineTo(X2, Y2);
         ctx.lineTo(X3, Y3);
         ctx.lineTo(X1, Y1);
+        ctx.stroke();
         ctx.fill();
       }
     }
