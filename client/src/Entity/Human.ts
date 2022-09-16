@@ -6,6 +6,7 @@ import { humanIdleHandL, humanIdleHandR } from "../Animation/HUMAN/FIST/IDLE_FIS
 import { humanMoveFootL, humanMoveFootR, humanMoveHandL, humanMoveHandR } from "../Animation/HUMAN/FIST/MOVE_FIST";
 import { humanUseHandL, humanUseHandR } from "../Animation/HUMAN/FIST/USE_FIST";
 import { humanIdleSword } from "../Animation/HUMAN/SWORD/IDLE_SWORD";
+import { humanAttackItem } from "../Animation/HUMAN/SWORD/USE_FIST";
 import { worldLayer1, worldLayer2 } from "../GameClient";
 import { mAnimatedSprite, mNode, mText } from "../Renderer";
 import { Sprites } from "../Sprites";
@@ -35,8 +36,9 @@ export class HumanEntity extends Entity {
     fill: "white",
     fontFamily: fontName,
     fontSize: 23,
-    bg: "grey",
-    padding: 5,
+    bg: "#403d3d2F",
+    padding: 7,
+    radius: 5,
   });
   healthBar = new HealthBar;
   doInterpolation: boolean = true;
@@ -165,24 +167,24 @@ export class HumanEntity extends Entity {
           computeAndApplyAnimationTransition(this.rightArm, humanIdleHandR, this.delta, t);
           computeAndApplyAnimationTransition(this.leftArm, humanIdleHandL, this.delta, t);
           computeAndApplyAnimationTransition(this.item, humanIdleSword, this.delta, t);
-          this.item.position.x = this.leftArm.position.x;
-          this.item.position.y = this.leftArm.position.y;
+          this.item.position.x = this.rightArm.position.x;
+          this.item.position.y = this.rightArm.position.y;
           break;
         }
         case ANIMATION.MOVE_SWORD: {
           computeAndApplyAnimationTransition(this.rightArm, humanMoveHandR, this.delta, t);
           computeAndApplyAnimationTransition(this.leftArm, humanMoveHandL, this.delta, t);
           computeAndApplyAnimationTransition(this.item, humanIdleSword, this.delta, t);
-          this.item.position.x = this.leftArm.position.x;
-          this.item.position.y = this.leftArm.position.y;
+          this.item.position.x = this.rightArm.position.x;
+          this.item.position.y = this.rightArm.position.y;
           break;
         }
         case ANIMATION.USE_SWORD: {
           computeAndApplyAnimationTransition(this.rightArm, humanUseHandR, this.delta, t);
-          computeAndApplyAnimationTransition(this.leftArm, humanUseHandL, this.delta, t);
-          computeAndApplyAnimationTransition(this.item, humanIdleSword, this.delta, t);
-          this.item.position.x = this.leftArm.position.x;
-          this.item.position.y = this.leftArm.position.y;
+          computeAndApplyAnimationTransition(this.leftArm, humanIdleHandL, this.delta, t);
+          computeAndApplyAnimationTransition(this.item, humanAttackItem, this.delta, t);
+          this.item.position.x = this.rightArm.position.x;
+          this.item.position.y = this.rightArm.position.y;
           break;
         }
       }
@@ -209,24 +211,24 @@ export class HumanEntity extends Entity {
           computeAndApplyAnimation(this.rightArm, humanIdleHandR, this.delta);
           computeAndApplyAnimation(this.leftArm, humanIdleHandL, this.delta);
           computeAndApplyAnimation(this.item, humanIdleSword, this.delta);
-          this.item.position.x = this.leftArm.position.x;
-          this.item.position.y = this.leftArm.position.y;
+          this.item.position.x = this.rightArm.position.x;
+          this.item.position.y = this.rightArm.position.y;
           break;
         }
         case ANIMATION.MOVE_SWORD: {
           computeAndApplyAnimation(this.rightArm, humanMoveHandR, this.delta);
           computeAndApplyAnimation(this.leftArm, humanMoveHandL, this.delta);
           computeAndApplyAnimation(this.item, humanIdleSword, this.delta);
-          this.item.position.x = this.leftArm.position.x;
-          this.item.position.y = this.leftArm.position.y;
+          this.item.position.x = this.rightArm.position.x;
+          this.item.position.y = this.rightArm.position.y;
           break;
         }
         case ANIMATION.USE_SWORD: {
           computeAndApplyAnimation(this.rightArm, humanUseHandR, this.delta);
-          computeAndApplyAnimation(this.leftArm, humanUseHandL, this.delta);
-          computeAndApplyAnimation(this.item, humanIdleSword, this.delta);
-          this.item.position.x = this.leftArm.position.x;
-          this.item.position.y = this.leftArm.position.y;
+          computeAndApplyAnimation(this.leftArm, humanIdleHandL, this.delta);
+          computeAndApplyAnimation(this.item, humanAttackItem, this.delta);
+          this.item.position.x = this.rightArm.position.x;
+          this.item.position.y = this.rightArm.position.y;
           break;
         }
       }

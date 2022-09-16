@@ -12,6 +12,7 @@ interface IItem {
   isMeele: boolean;
   meeleRange: number;
   meeleDamage: number;
+  sweepAngle: number;
 }
 
 interface IAnim {
@@ -36,8 +37,9 @@ Items[ITEM.FIST] = {
   useCooldown: 200,
   inventorySprite: SPRITE.SLOT,
   isMeele: true,
-  meeleRange: 100,
-  meeleDamage: 30,
+  meeleRange: 80,
+  meeleDamage: 3,
+  sweepAngle: Math.PI * .4,
   anim: {
     idle: ANIMATION.IDLE_FIST,
     move: ANIMATION.MOVE_FIST,
@@ -52,8 +54,9 @@ Items[ITEM.SPEAR] = {
   useCooldown: 200,
   inventorySprite: SPRITE.INV_SPEAR_SLOT,
   isMeele: true,
-  meeleRange: 100,
-  meeleDamage: 30,
+  meeleRange: 160,
+  meeleDamage: 14,
+  sweepAngle: Math.PI * .4,
   anim: {
     idle: ANIMATION.IDLE_SWORD,
     move: ANIMATION.MOVE_SWORD,
@@ -69,7 +72,8 @@ Items[ITEM.SWORD] = {
   useCooldown: 200,
   isMeele: true,
   meeleRange: 100,
-  meeleDamage: 30,
+  meeleDamage: 7,
+  sweepAngle: Math.PI * .4,
   anim: {
     idle: ANIMATION.IDLE_SWORD,
     move: ANIMATION.MOVE_SWORD,

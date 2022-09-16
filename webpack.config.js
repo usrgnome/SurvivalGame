@@ -19,6 +19,8 @@ module.exports = function (env) {
             hoist_funs: true,
             reduce_funcs: false,
             passes: 20,
+            drop_console: true,
+            drop_debugger: true,
             ecma: 2020,
             unsafe: true,
             toplevel: true,

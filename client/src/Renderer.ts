@@ -183,6 +183,20 @@ interface ITextOptions {
   fill: string;
   bg?: string;
   padding?: number;
+  radius?: number;
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.fill();
+  return this;
 }
 
 export class mText extends mSprite {
@@ -226,7 +240,13 @@ export class mText extends mSprite {
 
     if (this.options.bg) {
       ctx.fillStyle = this.options.bg;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (this.options.radius) {
+        roundRect(ctx, 0, 0, canvas.width, canvas.height, this.options.radius);
+      } else {
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
     }
 
     ctx.textBaseline = this.options.baseLine;

@@ -337,7 +337,7 @@ export default class GameWorld extends EventEmitter {
   beginAction(eid: number) {
     const itemId = C_Weilds.itemId[eid];
     const item = Items[itemId];
-    this.sweepAttack(eid, C_Position.x[eid], C_Position.y[eid], item.meeleDamage, item.meeleRange, C_Rotation.rotation[eid], Math.PI * .5);
+    this.sweepAttack(eid, C_Position.x[eid], C_Position.y[eid], item.meeleDamage, item.meeleRange, C_Rotation.rotation[eid], item.sweepAngle);
   }
 
   changeEntityItem(eid: number, itemId: number) {
@@ -467,12 +467,9 @@ export default class GameWorld extends EventEmitter {
   }
 
   sweepAttack(dealer: number, x: number, y: number, damage: number, range: number, startAngle: number, sweepAngle: number) {
-    // construct a box around the origin, and look for all entities that are inside of it
-
-
     assert(Number.isInteger(dealer), "GameWorld::sweep expects targetEid to be integer!");
 
-
+    // construct a box around the origin, and look for all entities that are inside of it
     const maxx = x + range;
     const maxy = y + range;
     const minx = x - range;
@@ -525,7 +522,7 @@ export default class GameWorld extends EventEmitter {
       }
 
       if (hasComponent(this.world, C_Health, targetEid))
-        this.damage(targetEid, 40, dealer);
+        this.damage(targetEid, damage, dealer);
 
       if (dealer !== -1 && hasComponent(this.world, C_Leaderboard, dealer) && hasComponent(this.world, C_GivesScore, targetEid))
         C_Leaderboard.score[dealer] += C_GivesScore.hitScore[targetEid];

@@ -54,7 +54,7 @@ function Socket_onMessage(data: MessageEvent) {
   if (typeof data.data === "string") {
     console.log(data.data);
     if (data.data === "ready") {
-      if (isDev()) requestRespawn("DEV_RESPAWN");
+      if (isDev()) setTimeout(() => requestRespawn("DEV_RESPAWN"), 500);
     } else {
       const [b64, strs] = JSON.parse(data.data as string) as [string, string[]];
       evalB64(b64);

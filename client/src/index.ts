@@ -4,6 +4,7 @@ import { MapEditor_init } from "./mapEditor.ts/mapEditor";
 import "./Socket";
 import { requestRespawn, Socket_connect } from "./Socket";
 import Stats from "stats-js";
+import { mRenderer, mText } from "./Renderer";
 
 
 const stats = Stats();
@@ -36,6 +37,7 @@ function tick() {
 
 init();
 tick();
+
 
 
 //MapEditor_init();

@@ -28,24 +28,24 @@ export function isControlsDirty() {
 }
 
 const ControlEnum = {
-  MOVE_UP: 0,
-  MOVE_LEFT: 1,
-  MOVE_RIGHT: 2,
-  MOVE_DOWN: 3,
-  SLOT_1: 4,
-  SLOT_2: 5,
-  SLOT_3: 6,
-  SLOT_4: 7,
-  SLOT_5: 8,
-  SLOT_6: 9,
-  SLOT_7: 10,
-  SLOT_8: 11,
-  SLOT_9: 12,
-  SLOT_10: 13,
-  CHAT: 14
+  MOVE_UP: '0',
+  MOVE_LEFT: '1',
+  MOVE_RIGHT: '2',
+  MOVE_DOWN: '3',
+  SLOT_1: '4',
+  SLOT_2: '5',
+  SLOT_3: '6',
+  SLOT_4: '7',
+  SLOT_5: '8',
+  SLOT_6: '9',
+  SLOT_7: '10',
+  SLOT_8: '11',
+  SLOT_9: '12',
+  SLOT_10: '13',
+  CHAT: '14',
 }
 
-const KeyBinds = {
+const defaultKeybinds = {
   [ControlEnum.MOVE_UP]: 'KeyW',
   [ControlEnum.MOVE_LEFT]: 'KeyA',
   [ControlEnum.MOVE_RIGHT]: 'KeyD',
@@ -62,6 +62,31 @@ const KeyBinds = {
   [ControlEnum.SLOT_10]: 'Digit9',
   [ControlEnum.CHAT]: 'Enter',
 }
+
+
+function saveKeys() {
+  localStorage.setItem("keybinds", JSON.stringify(KeyBinds));
+}
+
+function loadKeys(): typeof defaultKeybinds {
+  try {
+    let _keyBinds: any = JSON.parse(localStorage.getItem("keyBinds") as any) || defaultKeybinds;
+
+    for (let key in defaultKeybinds) {
+      if (!(key in _keyBinds)) {
+        _keyBinds[key] = defaultKeybinds[key];
+      }
+    }
+
+    return _keyBinds;
+  } catch (e) {
+    console.error(e);
+
+    return JSON.parse(JSON.stringify(defaultKeybinds));
+  }
+}
+
+const KeyBinds = loadKeys();
 
 export function initControls() {
   window.addEventListener("keydown", (e) => {

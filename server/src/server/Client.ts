@@ -219,8 +219,8 @@ export class Client {
   }
 
   onRequestSpawn() {
-    if (this.server.gameWorld.isEntityActive(this.eid)) return;
     let nickname = this.inStream.readString();
+    if (this.server.gameWorld.isEntityActive(this.eid)) return;
     if (nickname === "") nickname = "GameNickName:" + this.id;
     this.nickname = nickname;
 
