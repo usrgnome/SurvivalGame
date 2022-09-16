@@ -11,11 +11,12 @@ import { mapData } from './MapData';
 import { assert, get_polygon_centroid, mapVertsToMatterVerts } from '../server/ServerUtils';
 import { collisionLayer, COLLISION_TYPES } from '../server/config';
 import EventEmitter from "events";
-import { hitBounceEvent, hurtEvent, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
+import { actionEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
 import { createPlayer, createRock, createTree, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
 import { logger, loggerLevel } from '../server/Logger';
 
 Common.setDecomp(decomp);
+
 
 export default class GameWorld extends EventEmitter {
 
@@ -74,9 +75,11 @@ export default class GameWorld extends EventEmitter {
   private timeUntilNextStatsTick = 0;
 
   _on(name: 'entityRemoved', callback: (e: IEventEntityRemoved) => void): void;
+  _on(name: 'changeItem', callback: (e: IEventChangeItem) => void): void;
   _on(name: 'hitBounce', callback: (e: IEventHitBounce) => void): void;
   _on(name: 'entityHurt', callback: (e: IEventEntityHurt) => void): void;
   _on(name: 'tickStats', callback: (e: IEventTickStats) => void): void;
+  _on(name: 'action', callback: (e: IEventAction) => void): void;
   _on(name: string, callback: (e: any) => void) {
     this.on(name, callback);
   }
@@ -339,7 +342,15 @@ export default class GameWorld extends EventEmitter {
 
   changeEntityItem(eid: number, itemId: number) {
     C_Weilds.itemId[eid] = itemId;
-    //this.server.sendChangeItem(eid, itemId);
+    changeItemEvent.eid = eid;
+    changeItemEvent.itemId = itemId;
+    this.emit(changeItemEvent.type, changeItemEvent);
+  }
+
+  onActionStart(eid: number, animUseId: number) {
+    actionEvent.eid = eid;
+    actionEvent.animUseId = animUseId;
+    this.emit(actionEvent.type, actionEvent);
   }
 
   startAttackTimer(eid: number, attackDelay: number, attackCooldown: number) {
@@ -405,6 +416,14 @@ export default class GameWorld extends EventEmitter {
     const midY = (miny + maxy) * .5
     const box = Bodies.rectangle(midX, midY, width, height);
     return Query.region(this.engine.world.bodies, box.bounds);
+  }
+
+  queryBodyPrecise(body: Body) {
+    return Query.collides(body, this.engine.world.bodies);
+  }
+
+  isStructureAbleToBePlaced(body: Body) {
+
   }
 
   private onEntityDie(eid: number) {
@@ -506,7 +525,7 @@ export default class GameWorld extends EventEmitter {
       }
 
       if (hasComponent(this.world, C_Health, targetEid))
-        this.damage(dealer, targetEid, 40);
+        this.damage(targetEid, 40, dealer);
 
       if (dealer !== -1 && hasComponent(this.world, C_Leaderboard, dealer) && hasComponent(this.world, C_GivesScore, targetEid))
         C_Leaderboard.score[dealer] += C_GivesScore.hitScore[targetEid];
@@ -619,12 +638,34 @@ export default class GameWorld extends EventEmitter {
    * @memberof GameWorld
    */
   generateMap() {
-    logger.log(loggerLevel.info, `GameWorld: generating terrain`);
+
+    logger.log(loggerLevel.info, `GameWorld: generating world`);
+
+    const width = 5000;
+    const height = 5000;
+    const borderThickness = 100;
+
+    const wall1 = Bodies.rectangle(width * .5, -borderThickness, width, borderThickness, {isStatic: true});
+    const wall2 = Bodies.rectangle(width * .5, height + borderThickness, width, borderThickness, {isStatic: true});
+    const wall3 = Bodies.rectangle(-borderThickness, height * .5, borderThickness, height, {isStatic: true});
+    const wall4 = Bodies.rectangle(width + borderThickness, height * .5, borderThickness, height, {isStatic: true});
+
+    wall1.collisionFilter.category = wall2.collisionFilter.category = wall3.collisionFilter.category = wall4.collisionFilter.category = collisionLayer.ALL;
+    wall1.collisionFilter.mask = wall2.collisionFilter.mask = wall3.collisionFilter.mask = wall4.collisionFilter.mask = collisionLayer.ALL;
+
+    Composite.add(this.engine.world, wall1);
+    Composite.add(this.engine.world, wall2);
+    Composite.add(this.engine.world, wall3);
+    Composite.add(this.engine.world, wall4);
+
+    logger.log(loggerLevel.info, `GameWorld: loading terrain`);
+
     this.loadForType("OCEAN", "OCEAN", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
     this.loadForType("FORREST", "LAND", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
     this.loadForType("SNOW", "SNOW", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
     this.loadForType("LAVA", "LAVA", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
 
+    logger.log(loggerLevel.info, `GameWorld: spawning map entities`);
     for (let i = 0; i < 10; i++) {
       const forrestPolygons = mapData.FORREST.polygons;
       const polygon = forrestPolygons[randomArrayIndex(forrestPolygons)]
@@ -656,5 +697,7 @@ export default class GameWorld extends EventEmitter {
       this.setBodyPosition(wolf, Math.random() * 500, Math.random() * 500);
       this.addEntity(wolf);
     }
+
+    logger.log(loggerLevel.info, `GameWorld: finished loading world!`);
   }
 }

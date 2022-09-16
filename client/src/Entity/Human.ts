@@ -45,6 +45,8 @@ export class HumanEntity extends Entity {
   chatTimer = 3;
 
   updateName(text: string) {
+
+    this.body.tint = 0xFF0000F0;
     this.nameLabel.updateText(text);
     this.nameLabel.frame.anchor.x = this.nameLabel.frame.size.x * .5 * this.nameLabel.frame.scale.x;
     this.nameLabel.frame.anchor.y = this.nameLabel.frame.size.y * .5 * this.nameLabel.frame.scale.y;

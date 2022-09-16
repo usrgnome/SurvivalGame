@@ -162,6 +162,7 @@ export class mBufferGeometry extends mNode {
 }
 
 export class mSprite extends mNode {
+  tint: number = 0xFFFFFF00;
   frame: mFrame;
   isSprite = true;
   alpha: number = 1;
@@ -287,6 +288,9 @@ export class mAnimatedSprite extends mSprite {
   }
 }
 
+const tempCanvas = document.createElement("canvas");
+const tempCtx = tempCanvas.getContext('2d') as CanvasRenderingContext2D;
+
 export class mRenderer {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -350,17 +354,48 @@ export class mRenderer {
       const anchor = sprite.frame.anchor;
 
       ctx.globalAlpha = sprite.alpha;
-      ctx.drawImage(
-        sprite.frame.tex,
-        srcWidth * uvs[0],
-        srcHeight * uvs[1],
-        srcWidth * (uvs[2] - uvs[0]),
-        srcHeight * (uvs[3] - uvs[1]),
-        -anchor.x * scale.x,
-        -anchor.y * scale.y,
-        size.x * scale.x,
-        size.y * scale.y
-      );
+
+      if (false && sprite.tint) {
+        tempCanvas.width = size.x * scale.x;
+        tempCanvas.height = size.y * scale.y;
+
+        tempCtx.drawImage(
+          sprite.frame.tex,
+          srcWidth * uvs[0],
+          srcHeight * uvs[1],
+          srcWidth * (uvs[2] - uvs[0]),
+          srcHeight * (uvs[3] - uvs[1]),
+          0,
+          0,
+          size.x * scale.x,
+          size.y * scale.y
+        );
+
+        tempCtx.globalCompositeOperation = "source-atop";
+        tempCtx.fillStyle = "#" + (sprite.tint.toString(16));
+        tempCtx.rect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.fill();
+
+        ctx.drawImage(
+          tempCanvas,
+          -anchor.x * scale.x,
+          -anchor.y * scale.y
+        );
+
+      } else {
+        ctx.drawImage(
+          sprite.frame.tex,
+          srcWidth * uvs[0],
+          srcHeight * uvs[1],
+          srcWidth * (uvs[2] - uvs[0]),
+          srcHeight * (uvs[3] - uvs[1]),
+          -anchor.x * scale.x,
+          -anchor.y * scale.y,
+          size.x * scale.x,
+          size.y * scale.y
+        );
+      }
+
       ctx.globalAlpha = 1;
     } else if (node.isGeometry) {
       const bufferGeometry = node as mBufferGeometry;

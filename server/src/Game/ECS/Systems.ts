@@ -1,10 +1,11 @@
 import { IWorld } from "bitecs";
 import World from "../GameWorld";
 import { attackTimerQuery, bodyQuery, controlQuery, healthQuery, hitBouceQuery, hungerQuery, mobQuery, mouseQuery, temperatureQuery } from "./Queries";
-import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Temperature, C_TerrainInfo, } from "./Components";
+import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
 import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
 import { NULL_ENTITY } from "./EntityFactory";
+import { Items } from "../../../../shared/Item";
 
 export const bodySystem = (gameWorld: World, world: IWorld) => {
   const ents = bodyQuery(world)
@@ -30,9 +31,10 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
 
 
       if (!gameWorld.isAttackTimerActive(eid)) {
-        if (Math.random() > .5) {
-        }
+        
+        //gameWorld.
         //gameWorld.server.sendAction(eid, Items[C_Weilds.itemId[eid]].anim.use);
+        gameWorld.onActionStart(eid, Items[C_Weilds.itemId[eid]].anim.use)
         gameWorld.startAttackTimer(eid, 200, 200);
       }
     }

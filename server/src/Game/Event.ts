@@ -43,3 +43,27 @@ export interface IEventTickStats {
 export const tickStatsEvent = {
   type: 'tickStats'
 }
+
+export interface IEventAction {
+  type: string,
+  eid: number,
+  animUseId: number;
+}
+
+export const actionEvent = {
+  type: 'action',
+  eid: -1,
+  animUseId: -1,
+}
+
+export interface IEventChangeItem {
+  type: 'changeItem';
+  eid: number;
+  itemId: number;
+}
+
+export const changeItemEvent = {
+  type: 'changeItem',
+  eid: -1,
+  itemId: -1,
+};

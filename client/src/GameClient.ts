@@ -10,7 +10,7 @@ import { lerpAngle } from "../../shared/Utilts";
 import { HumanEntity } from "./Entity/Human";
 import { HitAnimatedEntity, TreeEntity } from "./Entity/Tree";
 import { Leaderboard_maxSize, Leaderboard_reposition, Leaderboard_showValue, Leaderboard_sprite, Leaderboard_updateValue } from "./UI/Leaderboard";
-import { healthBar, Hotbar_reposition, Hotbar_root, Hotbar_updateSlot, hungerBar, temperateBar } from "./UI/Hotbar";
+import { healthBar, Hotbars_update, Hotbar_reposition, Hotbar_root, Hotbar_updateSlot, hungerBar, temperateBar } from "./UI/Hotbar";
 import { RockEntity } from "./Entity/Rock";
 import { activeVisibleDecorations, deactiveVisibleDecorations, initDecoration } from "./Decoration.ts/Decoration";
 import { MobEntity } from "./Entity/MobEntity";
@@ -82,7 +82,6 @@ function parseMap() {
 }
 
 parseMap();
-console.log(colours, colorMap);
 const buffer = new mBufferGeometry(
   vertices,
   colours,
@@ -217,6 +216,8 @@ export function GameClient_update(now: number, delta: number) {
   }
 
   if (isDev()) Debug_update();
+  console.log(delta);
+  Hotbars_update(delta);
 
   const entityArr = GameClient_entities.array;
   const render_timestamp = now - (1000.0 / tickRate);
@@ -437,7 +438,6 @@ export function GameClient_unpackHitBouceEffect() {
   const x = Math.cos(angle) * range;
   const y = Math.sin(angle) * range;
 
-  console.log(angle, "angle");
   entity.setHit(x, y);
 }
 

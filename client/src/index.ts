@@ -26,7 +26,7 @@ function init() {
 let then = Date.now()
 function tick() {
   const now = Date.now();
-  const delta = (now - then) / 1000;
+  const delta = Math.min((now - then) / 1000, 1 / 30);
   then = now;
   GameClient_update(now, delta);
   GameClient_render(); // render the game world

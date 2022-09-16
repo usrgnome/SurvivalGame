@@ -58,13 +58,23 @@ export default class GameServer {
         const client = clients[u];
         if (!client.ready) continue;
         const eid = client.eid;
-        if(!this.gameWorld.isEntityActive(eid)) continue;
+        if (!this.gameWorld.isEntityActive(eid)) continue;
 
         const hunger = C_Hunger.hunger[eid];
         const temperate = C_Temperature.temperate[eid];
         const health = C_Health.health[eid];
         this.updateStats(client, health, hunger, temperate);
       }
+    });
+
+    this.gameWorld._on('action', (e) => {
+      const { eid, animUseId } = e;
+      this.sendAction(eid, animUseId);
+    });
+
+    this.gameWorld._on('changeItem', (e) => {
+      const { eid, itemId } = e;
+      this.sendChangeItem(eid, itemId);
     });
   }
 
