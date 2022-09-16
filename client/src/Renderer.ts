@@ -88,14 +88,14 @@ export class mAtlas {
   texture: mTexture;
   data: IAtlas;
   constructor(src: string, data: IAtlas) {
-    this.texture = new mTexture(src, new mPoint(data[metaStr].size[wStr], data[metaStr].size[hStr]));
+    this.texture = new mTexture(src, new mPoint(data.meta.size.w, data.meta.size.h));
     this.data = data;
   }
 
   frame(name: string, anchor: mPoint, scale: mPoint) {
     const frame = this.data.frames[name + ".png"].frame;
-    const width = frame[wStr];
-    const height = frame[hStr];
+    const width = frame.w;
+    const height = frame.h;
     const newPoint = new mPoint(anchor.x * width, anchor.y * height);
     return this.texture.frame(new mPoint(frame.x, frame.y), new mPoint(width, height), newPoint, scale)
   }
@@ -415,13 +415,11 @@ export class mRenderer {
 
         ctx.beginPath();
         ctx.fillStyle = color;
-        ctx.strokeStyle = color;
         ctx.moveTo(X1, Y1);
         ctx.lineTo(X2, Y2);
         ctx.lineTo(X3, Y3);
         ctx.lineTo(X1, Y1);
         ctx.fill();
-        ctx.stroke();
       }
     }
 

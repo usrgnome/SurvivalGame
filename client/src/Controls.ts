@@ -27,19 +27,55 @@ export function isControlsDirty() {
   return ret;
 }
 
+const ControlEnum = {
+  MOVE_UP: 0,
+  MOVE_LEFT: 1,
+  MOVE_RIGHT: 2,
+  MOVE_DOWN: 3,
+  SLOT_1: 4,
+  SLOT_2: 5,
+  SLOT_3: 6,
+  SLOT_4: 7,
+  SLOT_5: 8,
+  SLOT_6: 9,
+  SLOT_7: 10,
+  SLOT_8: 11,
+  SLOT_9: 12,
+  SLOT_10: 13,
+  CHAT: 14
+}
+
+const KeyBinds = {
+  [ControlEnum.MOVE_UP]: 'KeyW',
+  [ControlEnum.MOVE_LEFT]: 'KeyA',
+  [ControlEnum.MOVE_RIGHT]: 'KeyD',
+  [ControlEnum.MOVE_DOWN]: 'KeyS',
+  [ControlEnum.SLOT_1]: 'Digit0',
+  [ControlEnum.SLOT_2]: 'Digit1',
+  [ControlEnum.SLOT_3]: 'Digit2',
+  [ControlEnum.SLOT_4]: 'Digit3',
+  [ControlEnum.SLOT_5]: 'Digit4',
+  [ControlEnum.SLOT_6]: 'Digit5',
+  [ControlEnum.SLOT_7]: 'Digit6',
+  [ControlEnum.SLOT_8]: 'Digit7',
+  [ControlEnum.SLOT_9]: 'Digit8',
+  [ControlEnum.SLOT_10]: 'Digit9',
+  [ControlEnum.CHAT]: 'Enter',
+}
+
 export function initControls() {
   window.addEventListener("keydown", (e) => {
     switch (e.code) {
-      case 'KeyW':
+      case KeyBinds[ControlEnum.MOVE_UP]:
         if (!isChatOpen) keyState |= 1;
         break;
-      case 'KeyD':
+      case KeyBinds[ControlEnum.MOVE_RIGHT]:
         if (!isChatOpen) keyState |= 2;
         break;
-      case 'KeyS':
+      case KeyBinds[ControlEnum.MOVE_DOWN]:
         if (!isChatOpen) keyState |= 4;
         break;
-      case 'KeyA':
+      case KeyBinds[ControlEnum.MOVE_LEFT]:
         if (!isChatOpen) keyState |= 8;
         break;
     }
@@ -47,19 +83,19 @@ export function initControls() {
 
   window.addEventListener("keyup", (e) => {
     switch (e.code) {
-      case 'KeyW':
+      case KeyBinds[ControlEnum.MOVE_UP]:
         if (!isChatOpen) keyState &= ~1;
         break;
-      case 'KeyD':
+      case KeyBinds[ControlEnum.MOVE_RIGHT]:
         if (!isChatOpen) keyState &= ~2;
         break;
-      case 'KeyS':
+      case KeyBinds[ControlEnum.MOVE_DOWN]:
         if (!isChatOpen) keyState &= ~4;
         break;
-      case 'KeyA':
+      case KeyBinds[ControlEnum.MOVE_LEFT]:
         if (!isChatOpen) keyState &= ~8;
         break;
-      case 'Enter':
+      case KeyBinds[ControlEnum.CHAT]:
         GameClient_enterPressed();
         break;
     }

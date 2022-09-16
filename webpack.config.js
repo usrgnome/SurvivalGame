@@ -24,8 +24,9 @@ module.exports = function (env) {
             toplevel: true,
           },
           mangle: {
-            properties: true,
-            reserved: [/meta/, "meta"]
+            properties: {
+              reserved: ["meta", "w", "h"]
+            },
           },
           ecma: 2020,
           toplevel: true,
