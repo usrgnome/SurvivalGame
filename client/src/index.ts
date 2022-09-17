@@ -40,4 +40,4 @@ tick();
 
 
 
-MapEditor_init();
+//MapEditor_init();

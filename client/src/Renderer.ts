@@ -439,7 +439,6 @@ export class mRenderer {
         ctx.lineTo(X2, Y2);
         ctx.lineTo(X3, Y3);
         ctx.lineTo(X1, Y1);
-        ctx.stroke();
         ctx.fill();
       }
     }

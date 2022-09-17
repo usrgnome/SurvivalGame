@@ -25,14 +25,14 @@ class Bar {
   targetFill: number = 1;
   type: number = 0;
 
-  changeFill(fillColor: string) {
+  changeFill(fillColor: number) {
     const ctx = this.fillSprite.getCtx();
-    ctx.fillStyle = fillColor;
+    ctx.fillStyle = numberToHexStr(fillColor);
     ctx.fillRect(0, 0, this.fillSprite.frame.size.x, this.fillSprite.frame.size.y);
   }
   // TODO, add the bar fill, whether should be a image or a buffer geometry
 
-  constructor(spriteId: number, fillColor: string, fillOffsetX: number = 0, fillOffsetY: number = 0) {
+  constructor(spriteId: number, fillColor: number, fillOffsetX: number = 0, fillOffsetY: number = 0) {
     this.bar.frame = Sprites[spriteId];
 
     this.fillSprite.resize(270, 40);
@@ -63,7 +63,7 @@ class Bar {
     this.fillSprite.scale.x = this.fill;
 
     if (this.type === temperatureBarType) {
-        this.changeFill(lerpColor('#47a1b4', '#eb4334', this.fill));
+        this.changeFill(lerpColor(0x47a1b4, 0xeb4334, this.fill));
       //if (this.fill === 0.5)
         //this.changeFill("#aeeb34");
       //else if (this.fill > 0.5)
@@ -74,9 +74,9 @@ class Bar {
   }
 }
 
-export const temperateBar = new Bar(SPRITE.COLD_BAR, "blue", -5);
-export const hungerBar = new Bar(SPRITE.FOOD_BAR, "#b53217", -4, 4);
-export const healthBar = new Bar(SPRITE.HEALTH_BAR, "#62a859", 1, -5);
+export const temperateBar = new Bar(SPRITE.COLD_BAR, 0x6794db, -5);
+export const hungerBar = new Bar(SPRITE.FOOD_BAR, 0xb53217, -4, 4);
+export const healthBar = new Bar(SPRITE.HEALTH_BAR, 0x62a859, 1, -5);
 
 temperateBar.type = temperatureBarType;
 
@@ -84,16 +84,21 @@ root.add(temperateBar.root);
 root.add(hungerBar.root);
 root.add(healthBar.root);
 
-function lerpColor(a: string, b: string, amount: number) {
-  var ah = parseInt(a.replace(/#/g, ''), 16),
+export function numberToHexStr(a: number){
+  return '#' + ((1 << 24) + a).toString(16).slice(1);
+}
+
+export function lerpColor(a: number, b: number, amount: number) {
+  var ah = a,
     ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
-    bh = parseInt(b.replace(/#/g, ''), 16),
+    bh = b,
     br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
     rr = ar + amount * (br - ar),
     rg = ag + amount * (bg - ag),
     rb = ab + amount * (bb - ab);
 
-  return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
+  //return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
+  return (rr << 16) | (rg << 8) | (rb);
 }
 
 for (let i = 0; i < totalSlots; i++) {

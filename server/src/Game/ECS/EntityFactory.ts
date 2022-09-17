@@ -45,6 +45,7 @@ export function createWall(gameWorld: GameWorld) {
     addComponent(gameWorld.world, C_Body, eid, true);
     addComponent(gameWorld.world, C_Rotation, eid, true);
     addComponent(gameWorld.world, C_HitBouceEffect, eid, true);
+    addComponent(gameWorld.world, C_Health, eid, true);
 
     C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
 
@@ -54,6 +55,7 @@ export function createWall(gameWorld: GameWorld) {
     //@ts-ignore
     body.eid = eid;
 
+    C_Health.health[eid] = C_Health.maxHealth[eid] = 100;
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
 

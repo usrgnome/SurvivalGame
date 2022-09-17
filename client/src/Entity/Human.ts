@@ -127,10 +127,10 @@ export class HumanEntity extends Entity {
   update(delta: number) {
     this.delta += delta;
 
-    if(this.chatTimer){
+    if (this.chatTimer) {
       this.chatTimer -= delta;
 
-      if(this.chatTimer <= 0){
+      if (this.chatTimer <= 0) {
         this.chatTimer = 0;
         this.chatLabel.visible = false;
       }
@@ -260,11 +260,17 @@ export class HumanEntity extends Entity {
   }
 
   changeItem(itemId: number) {
-    const spriteId = Items[itemId].spriteId;
-    if (spriteId === -1) this.item.visible = false;
-    else {
-      this.item.frame = Sprites[spriteId];
-      this.item.visible = true;
+    const item = Items[itemId];
+    const spriteId = item.spriteId;
+
+    if (item.isStructure) {
+      this.item.visible = false;
+    } else {
+      if (spriteId === -1) this.item.visible = false;
+      else {
+        this.item.frame = Sprites[spriteId];
+        this.item.visible = true;
+      }
     }
   }
 }

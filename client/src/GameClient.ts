@@ -10,7 +10,7 @@ import { lerpAngle } from "../../shared/Utilts";
 import { HumanEntity } from "./Entity/Human";
 import { HitAnimatedEntity, TreeEntity } from "./Entity/Tree";
 import { Leaderboard_maxSize, Leaderboard_reposition, Leaderboard_showValue, Leaderboard_sprite, Leaderboard_updateValue } from "./UI/Leaderboard";
-import { healthBar, Hotbars_update, Hotbar_reposition, Hotbar_root, Hotbar_updateSlot, hungerBar, temperateBar } from "./UI/Hotbar";
+import { healthBar, Hotbars_update, Hotbar_reposition, Hotbar_root, Hotbar_updateSlot, hungerBar, lerpColor, numberToHexStr, temperateBar } from "./UI/Hotbar";
 import { RockEntity } from "./Entity/Rock";
 import { activeVisibleDecorations, deactiveVisibleDecorations, initDecoration } from "./Decoration.ts/Decoration";
 import { MobEntity } from "./Entity/MobEntity";
@@ -82,7 +82,7 @@ class Poly {
   }
 }
 
-
+let oceanPolys: Poly[] = [];
 
 function parseMap() {
 
@@ -109,6 +109,7 @@ function parseMap() {
         vert.push(newVertices[i++])
 
         const poly = new Poly(vert, mapData[name].color);
+        if(name === "OCEAN") oceanPolys.push(poly);
         tree.insert(poly);
       }
 
@@ -247,6 +248,9 @@ export function mouseVsSprite(x: number, y: number, node: mNode, maxDepth = 1, a
   return false;
 }
 
+let v = 0;
+let dir = 1;
+
 export function GameClient_update(now: number, delta: number) {
 
 
@@ -257,6 +261,25 @@ export function GameClient_update(now: number, delta: number) {
     outStream.writeU8(keyState);
     outStream.writeF32(mouseState);
     flushStream();
+  }
+
+  if(dir){
+    v += delta / 5;
+    if(v >= 1){
+      v = 1;
+      dir = 0;
+    }
+  } else {
+    v -= delta / 5;
+    if(v <= 0){
+      v = 0;
+      dir = 1;
+    }
+  }
+
+  const color = numberToHexStr(lerpColor(0x396ec4, 0x326cc9, v));
+  for(let i = 0; i < oceanPolys.length; i++){
+    oceanPolys[i].color = color;
   }
 
   if (!isProd()) Debug_update();
@@ -467,8 +490,7 @@ export function GameClient_unpackAddClient() {
 export function GameClient_unpackSwapItem() {
   const eid = inStream.readULEB128();
   const itemId = inStream.readU16();
-
-  let entity = GameClient_entities.find(eid);
+  const entity = GameClient_entities.find(eid);
 
   if (itemId !== (<HumanEntity>entity).itemId) {
     (<HumanEntity>entity).itemId = itemId; // do something to the skeleton

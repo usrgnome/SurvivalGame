@@ -1,10 +1,10 @@
 import { IWorld } from "bitecs";
 import World from "../GameWorld";
 import { attackTimerQuery, bodyQuery, controlQuery, healthQuery, hitBouceQuery, hungerQuery, mobQuery, mouseQuery, temperatureQuery } from "./Queries";
-import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
+import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
 import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
-import { NULL_ENTITY } from "./EntityFactory";
+import { createWall, NULL_ENTITY } from "./EntityFactory";
 import { Items, IToolItem } from "../../../../shared/Item";
 
 export const bodySystem = (gameWorld: World, world: IWorld) => {
@@ -31,11 +31,27 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
 
 
       if (!gameWorld.isAttackTimerActive(eid)) {
-        
+
         //gameWorld.
         //gameWorld.server.sendAction(eid, Items[C_Weilds.itemId[eid]].anim.use);
-        gameWorld.onActionStart(eid, (Items[C_Weilds.itemId[eid]] as IToolItem).anim.use)
-        gameWorld.startAttackTimer(eid, 200, 200);
+        const item = Items[C_Weilds.itemId[eid]];
+        if (item.isStructure) {
+          const body = gameWorld.getBody(eid);
+
+          const wall = createWall(gameWorld);
+          gameWorld.addEntity(wall);
+
+          const rotation = C_Rotation.rotation[eid];
+          const range = 130;
+          const x = Math.cos(rotation) * range;
+          const y = Math.sin(rotation) * range;
+
+          gameWorld.setBodyPosition(wall, body.position.x + x, body.position.y + y);
+        } else if (item.isTool) {
+          const tool = item as IToolItem;
+          gameWorld.onActionStart(eid, tool.anim.use)
+          gameWorld.startAttackTimer(eid, tool.useDelay, tool.useCooldown);
+        }
       }
     }
   }
@@ -85,13 +101,13 @@ export const temperateSystem = (gameWorld: World, world: IWorld) => {
     50
     0 (too cold)
     */
-    
+
     //console.log(`
-      //inWater: ${C_TerrainInfo.inWaterCount[eid]}
-      //onDesert: ${C_TerrainInfo.onDesertCount[eid]}
-      //onLand: ${C_TerrainInfo.onLandCount[eid]}
-      //onLava: ${C_TerrainInfo.onLavaCount[eid]}
-      //onSnow: ${C_TerrainInfo.onSnowCount[eid]}
+    //inWater: ${C_TerrainInfo.inWaterCount[eid]}
+    //onDesert: ${C_TerrainInfo.onDesertCount[eid]}
+    //onLand: ${C_TerrainInfo.onLandCount[eid]}
+    //onLava: ${C_TerrainInfo.onLavaCount[eid]}
+    //onSnow: ${C_TerrainInfo.onSnowCount[eid]}
     //`);
 
     if (isSwimming)

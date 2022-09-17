@@ -1,5 +1,6 @@
 import { SPRITE } from "./Sprite";
 import { ANIMATION } from "./AnimationConfig";
+import { types } from "./EntityTypes";
 
 interface IItem {
   id: number;
@@ -9,10 +10,12 @@ interface IItem {
   isTool: boolean;
   spriteId: number;
   inventorySprite: number;
+  anim: IAnim;
 }
 
 export interface IStructureItem extends IItem {
   isStructure: true,
+  placedId: number;
 }
 
 export interface IEquipmentItem extends IItem {
@@ -29,7 +32,6 @@ export interface IToolItem extends IItem {
   meeleRange: number;
   meeleDamage: number;
   sweepAngle: number;
-  anim: IAnim;
   useDelay: number,
   useCooldown: number,
 }
@@ -86,8 +88,8 @@ Items[ITEM.SPEAR] = validateToolItem({
   isConsumable: false,
   id: ITEM.SPEAR,
   spriteId: SPRITE.SPEAR,
-  useDelay: 100,
-  useCooldown: 200,
+  useDelay: 200,
+  useCooldown: 400,
   inventorySprite: SPRITE.INV_SPEAR_SLOT,
   isMeele: true,
   meeleRange: 160,
@@ -108,8 +110,8 @@ Items[ITEM.SWORD] = validateToolItem({
   id: ITEM.SWORD,
   spriteId: SPRITE.SWORD,
   inventorySprite: SPRITE.INV_SWORD_SLOT,
-  useDelay: 100,
-  useCooldown: 200,
+  useDelay: 200,
+  useCooldown: 300,
   isMeele: true,
   meeleRange: 100,
   meeleDamage: 7,
@@ -125,8 +127,14 @@ Items[ITEM.WOOD_WALL] = validateStructureItem({
   isStructure: true,
   isTool: false,
   isEquipable: false,
+  placedId: types.WALL,
   isConsumable: false,
   id: ITEM.WOOD_WALL,
   spriteId: SPRITE.WALL,
-  inventorySprite: SPRITE.WALL,
+  inventorySprite: SPRITE.INV_WALL,
+  anim: {
+    idle: ANIMATION.IDLE_FIST,
+    move: ANIMATION.MOVE_FIST,
+    use: ANIMATION.USE_FIST,
+  }
 })
