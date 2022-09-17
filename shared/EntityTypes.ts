@@ -4,6 +4,7 @@ export const types = {
   ROCK: $v++,
   PLAYER: $v++,
   WOLF: $v++,
+  WALL: $v++,
   TREE: $v++,
 }
 

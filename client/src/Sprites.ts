@@ -46,6 +46,7 @@ const healthBarBorder = new mTexture("img/ui/health-gauge-front.png", new mPoint
 const healthBarFillColor = new mTexture("img/ui/health-gauge-background-object.png", new mPoint(293, 60));
 const healthBarBgColor = new mTexture("img/ui/health-gauge-background.png", new mPoint(293, 60));
 const leaderboardBg = new mTexture("img/ui/leaderboard.png", new mPoint(500, 660));
+const wall = new mTexture("img/entity/wood_wall.png", new mPoint(297, 287));
 const slotAtlas = new mTexture("img/ui/inv_slot.png", new mPoint(462, 462));
 const swordSlotAtlas = new mTexture("img/ui/inv_sword_stone.png", new mPoint(462, 462));
 const spearSlotAtlas = new mTexture("img/ui/inv_spear_stone.png", new mPoint(462, 462));
@@ -78,6 +79,7 @@ export const Sprites: any = {
   [SPRITE.HEALTH_BAR_BAR_COLOR]: healthBarFillColor.frame(originPoint, new mPoint(293, 60), new mPoint(293 * 0, 60 * .5), halfScale),
   [SPRITE.HEALTH_BAR_BG_COLOR]: healthBarBgColor.frame(originPoint, new mPoint(293, 60), new mPoint(293 * .5, 60 * .5), halfScale),
   [SPRITE.LEADERBOARD_BG]: leaderboardBg.frame(originPoint, new mPoint(500, 660), new mPoint(0, 0), halfScale),
+  [SPRITE.WALL]: wall.frame(originPoint, new mPoint(297, 287), new mPoint(297 * .5, 298 * .5), halfScale),
   [SPRITE.SLOT]: slotAtlas.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),
   [SPRITE.WOLF]: wolfTexture.frame(originPoint, new mPoint(224, 224), new mPoint(224 * .5, 224 * .5), new mPoint(.8, .8)),
   [SPRITE.INV_SPEAR_SLOT]: spearSlotAtlas.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),

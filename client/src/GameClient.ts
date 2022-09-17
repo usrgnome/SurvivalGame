@@ -1,6 +1,6 @@
 import { types } from "../../shared/EntityTypes";
 import { CLIENT_HEADER } from "../../shared/headers";
-import { Items } from "../../shared/Item";
+import { Items, IToolItem } from "../../shared/Item";
 import ObjectManagerAssigned from "../../shared/lib/ObjectManagerAssignedIds";
 import { getKeyState, getMouseState, isControlsDirty, mouse, mouseX, mouseY, stopMoving } from "./Controls";
 import { Entity, getSnapShot, storeSnapShot } from "./Entity/Entity";
@@ -18,6 +18,7 @@ import earcut from "./Ear";
 import { isDev, isProd } from "./dev";
 import { debugInfo, Debug_init, Debug_update, Debug_updatePing, Debug_updateServerVersion } from "./UI/Debug";
 import QuadNode from "./QuadNode";
+import { WallEntity } from "./Entity/WallEntity";
 
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -305,7 +306,7 @@ export function GameClient_update(now: number, delta: number) {
         if (entity.type === types.PLAYER) {
           const distanceDelta = (root.position.x - newX) ** 2 + (root.position.y - newY) ** 2;
           const humanEntity = entity as HumanEntity;
-          const item = Items[humanEntity.itemId];
+          const item = Items[humanEntity.itemId] as IToolItem;
           if (distanceDelta > 1) {
             if (entity.animationState !== item.anim.use && item.anim.move !== entity.animationState) entity.changeAnimState(item.anim.move);
           } else {
@@ -351,6 +352,9 @@ export function gameClient_addEntity(now: number, eid: number, type: number, x: 
   switch (type) {
     case types.PLAYER:
       entity = new HumanEntity(type);
+      break;
+    case types.WALL:
+      entity = new WallEntity(type);
       break;
     case types.TREE:
       entity = new TreeEntity(type);

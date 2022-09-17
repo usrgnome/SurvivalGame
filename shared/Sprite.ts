@@ -39,5 +39,6 @@ export const SPRITE = {
   HEALTH_BAR: 37,
   COLD_BAR: 38,
   FOOD_BAR: 39,
+  WALL: 40,
 }
 

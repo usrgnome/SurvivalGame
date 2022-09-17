@@ -35,9 +35,9 @@ function tick() {
   stats.update();
 }
 
-init();
-tick();
+//init();
+//tick();
 
 
 
-//MapEditor_init();
+MapEditor_init();

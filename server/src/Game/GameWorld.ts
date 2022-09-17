@@ -2,7 +2,7 @@ import { createWorld, removeEntity, hasComponent } from 'bitecs'
 import { Engine, Common, Events, Composite, Bodies, Runner, Body, Query, Vector } from "matter-js";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { C_AttackTimer, C_Base, C_ClientHandle, C_GivesScore, C_Health, C_HitBouceEffect, C_Leaderboard, C_Position, C_Rotation, C_TerrainInfo, C_Weilds } from "./ECS/Components";
-import { Items } from '../../../shared/Item';
+import { Items, IToolItem } from '../../../shared/Item';
 import decomp from "poly-decomp"
 import { angleDifference, getRandomPointInPolygon, randomArrayIndex } from '../../../shared/Utilts';
 import { leaderboardQuery } from './ECS/Queries';
@@ -12,7 +12,7 @@ import { assert, get_polygon_centroid, mapVertsToMatterVerts } from '../server/S
 import { collisionLayer, COLLISION_TYPES } from '../server/config';
 import EventEmitter from "events";
 import { actionEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
-import { createPlayer, createRock, createTree, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
+import { createPlayer, createRock, createTree, createWall, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
 import { logger, loggerLevel } from '../server/Logger';
 
 Common.setDecomp(decomp);
@@ -336,7 +336,7 @@ export default class GameWorld extends EventEmitter {
 
   beginAction(eid: number) {
     const itemId = C_Weilds.itemId[eid];
-    const item = Items[itemId];
+    const item = Items[itemId] as IToolItem;
     this.sweepAttack(eid, C_Position.x[eid], C_Position.y[eid], item.meeleDamage, item.meeleRange, C_Rotation.rotation[eid], item.sweepAngle);
   }
 
@@ -709,9 +709,9 @@ export default class GameWorld extends EventEmitter {
       this.addEntity(rock);
     }
 
-    for (let i = 0; i < 0; i++) {
-      const tree = createPlayer(this, -1);
-      this.setBodyPosition(tree, Math.random() * 100000, Math.random() * 100000);
+    for (let i = 0; i < 1; i++) {
+      const tree = createWall(this);
+      this.setBodyPosition(tree, 5000, 5000)
       this.addEntity(tree);
     }
 

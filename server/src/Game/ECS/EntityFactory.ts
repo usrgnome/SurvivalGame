@@ -39,6 +39,27 @@ export function createRock(gameWorld: GameWorld) {
     return eid;
 }
 
+export function createWall(gameWorld: GameWorld) {
+    const eid = createEID(gameWorld, types.WALL);
+    addComponent(gameWorld.world, C_Position, eid, true);
+    addComponent(gameWorld.world, C_Body, eid, true);
+    addComponent(gameWorld.world, C_Rotation, eid, true);
+    addComponent(gameWorld.world, C_HitBouceEffect, eid, true);
+
+    C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
+
+    const body = Bodies.circle(0, 0, 60);
+    body.collisionFilter.category = collisionLayer.ENVIRONMENT;
+    Body.setStatic(body, true);
+    //@ts-ignore
+    body.eid = eid;
+
+    C_Rotation.rotation[eid] = 0;
+    gameWorld.bodyMap.set(eid, body);
+
+    return eid;
+}
+
 /**
  * @description Creates a player entity. Pass -1 as clientId for no associated client handle
  * @param {number} clientId associated client
@@ -96,6 +117,7 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
 
     Inventory_tryGiveItem(eid, ITEM.SWORD, 1);
     Inventory_tryGiveItem(eid, ITEM.SPEAR, 1);
+    Inventory_tryGiveItem(eid, ITEM.WOOD_WALL, 1);
     return eid;
 }
 

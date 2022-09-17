@@ -5,7 +5,7 @@ import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse,
 import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
 import { NULL_ENTITY } from "./EntityFactory";
-import { Items } from "../../../../shared/Item";
+import { Items, IToolItem } from "../../../../shared/Item";
 
 export const bodySystem = (gameWorld: World, world: IWorld) => {
   const ents = bodyQuery(world)
@@ -34,7 +34,7 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
         
         //gameWorld.
         //gameWorld.server.sendAction(eid, Items[C_Weilds.itemId[eid]].anim.use);
-        gameWorld.onActionStart(eid, Items[C_Weilds.itemId[eid]].anim.use)
+        gameWorld.onActionStart(eid, (Items[C_Weilds.itemId[eid]] as IToolItem).anim.use)
         gameWorld.startAttackTimer(eid, 200, 200);
       }
     }
