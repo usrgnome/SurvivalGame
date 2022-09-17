@@ -12,7 +12,7 @@ module.exports = function (env) {
     entry: path.join(__dirname, 'client/src/index.ts'),
     mode: isProduction ? 'production' : 'development',
     optimization: {
-      minimize: false,
+      minimize: isProduction,
       minimizer: [new TerserPlugin({
         terserOptions: {
           compress: {

@@ -35,8 +35,8 @@ function tick() {
   stats.update();
 }
 
-//init();
-//tick();
+init();
+tick();
 
 
 
