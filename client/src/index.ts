@@ -3,9 +3,9 @@ import { GameClient_render, GameClient_resize, GameClient_update } from "./GameC
 import { MapEditor_init } from "./mapEditor.ts/mapEditor";
 import "./Socket";
 import { requestRespawn, Socket_connect } from "./Socket";
-import Stats from "stats-js";
-import { mRenderer, mText } from "./Renderer";
+import Stats from "./Stats";
 
+console.log(Stats);
 
 const stats = Stats();
 
