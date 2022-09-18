@@ -32,7 +32,7 @@ export default class GameServer {
       if (this.clients.has(cid)) {
         const client = this.clients.find(cid);
         client.ownedEntities.remove(eid);
-        if(client.eid === eid) this.clientPlayerRemoved(client);
+        if (client.eid === eid) this.clientPlayerRemoved(client);
       }
     });
 
@@ -52,10 +52,11 @@ export default class GameServer {
       if (this.clients.has(cid)) {
         const client = this.clients.find(cid);
 
-        const hunger = C_Hunger.hunger[eid];
-        const temperate = C_Temperature.temperate[eid];
-
-        this.updateStats(client, health, hunger, temperate);
+        if (eid === client.eid) {
+          const hunger = C_Hunger.hunger[eid];
+          const temperate = C_Temperature.temperate[eid];
+          this.updateStats(client, health, hunger, temperate);
+        }
       }
     });
 
