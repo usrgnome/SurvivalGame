@@ -1,13 +1,15 @@
 import GameServer from "./GameServer";
 import { WebSocket } from "uWebSockets.js";
 import { CLIENT_HEADER, SERVER_HEADER } from "../../../shared/headers";
-import { C_Base, C_ClientHandle, C_Controls, C_Health, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds } from "../Game/ECS/Components";
+import { C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds, maxIventorySize } from "../Game/ECS/Components";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { networkTypes, types } from "../../../shared/EntityTypes";
 import { resetPLayerStats } from "../Game/health";
 import { modulo } from "../../../shared/Utilts";
 import { createPlayer, NULL_ENTITY } from "../Game/ECS/EntityFactory";
 import { BinaryTypes, BufferReader, BufferSchema, BufferWriter } from "../../../shared/lib/StreamUtils"
+import { Items } from "../../../shared/Item";
+import { removeComponent } from "bitecs";
 
 const TMP_ENTITY_MANAGER: Map<number, boolean> = new Map();
 
@@ -40,6 +42,7 @@ export class Client {
   nickname: string = "";
   ready: boolean = false;
   visibleEntities = new EntityIdManager();
+  ownedEntities = new EntityIdManager();
 
   constructor(server: GameServer, socket: WebSocket) {
     socket.client = this;
@@ -99,7 +102,7 @@ export class Client {
       const body = bodies[i];
       // @ts-ignore
       const eid = body.eid as number;
-      if (eid === NULL_ENTITY) continue;
+      if (eid === NULL_ENTITY || eid === undefined) continue;
 
       if (this.visibleEntities.has(eid)) {
         // update
@@ -140,12 +143,22 @@ export class Client {
     TMP_ENTITY_MANAGER.clear();
   }
 
+
+  removeOwnedEntities(){
+    const ownedEntities = this.ownedEntities.array.slice();
+    for (let i = 0; i < ownedEntities.length; i++) {
+      const eid = ownedEntities[i];
+      removeComponent(this.server.gameWorld.world, C_ClientHandle, eid);
+      this.server.gameWorld.removeEntity(eid);
+      this.ownedEntities.remove(eid);
+    }
+  }
+
   onSocketClose(code: number, message: ArrayBuffer) {
     this.ready = false;
-    if (this.eid !== NULL_ENTITY)
-      this.server.gameWorld.deleteEntity(this.eid);
-    this.eid = NULL_ENTITY;
     this.server.removeClient(this);
+    this.removeOwnedEntities();
+    this.eid = NULL_ENTITY;
   }
 
   onSocketMessage(data: ArrayBuffer, isBinary: boolean) {
@@ -178,12 +191,25 @@ export class Client {
         }
         case CLIENT_HEADER.INVENTORY: {
           try { inventorySchema.validate(inStream); }
+
           catch (e) { return; };
 
-          const slotId = inStream.readU8() * 2;
+          if (this.eid === NULL_ENTITY) return;
+
+          const slotId = inStream.readU8();
+          if (slotId > maxIventorySize) return;
+          const slotOffset = slotId * 2;
+          if (slotOffset >= C_Inventory.items[this.eid].length) console.warn("Too long slot offset")
+
+
           const eid = this.eid;
-          const itemId = C_Inventory.items[eid][slotId];
-          this.server.gameWorld.changeEntityItem(eid, itemId);
+          const itemId = C_Inventory.items[eid][slotOffset];
+          const item = Items[itemId];
+
+          if (item.isTool)
+            this.server.gameWorld.equipItem(eid, itemId);
+          else if (item.isStructure)
+            this.server.gameWorld.equipItem(eid, itemId);
           break;
         }
         case CLIENT_HEADER.CHAT: {
@@ -209,8 +235,6 @@ export class Client {
 
           this.onPong();
           break;
-        default:
-          throw "unknown header!" + header;
       }
     }
   }
@@ -220,7 +244,6 @@ export class Client {
   */
   onceReady() {
     this.socket.send("ready", false);
-    this.eid = createPlayer(this.server.gameWorld, this.id);
     this.ready = true;
     this.server.sendClientInitilise(this);
   }
@@ -251,12 +274,10 @@ export class Client {
 
   onRequestSpawn() {
     let nickname = this.inStream.readString();
-    if (this.server.gameWorld.isEntityActive(this.eid)) return;
+    if (this.eid !== NULL_ENTITY) return;
     if (nickname === "") nickname = "GameNickName:" + this.id;
     this.nickname = nickname;
-
-    resetPLayerStats(this.eid);
-    this.server.gameWorld.addEntity(this.eid);
+    this.eid = createPlayer(this.server.gameWorld, this.id);
     this.server.playerSpawned(this);
   }
 
@@ -285,5 +306,10 @@ export class Client {
   sendPingTime(time: number) {
     this.stream.writeU8(SERVER_HEADER.PING_RESPONSE);
     this.stream.writeU16(time);
+  }
+
+  onDied() {
+    this.eid = NULL_ENTITY;
+    this.removeOwnedEntities();
   }
 }

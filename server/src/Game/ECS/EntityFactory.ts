@@ -36,16 +36,22 @@ export function createRock(gameWorld: GameWorld) {
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
 
+    gameWorld.addEntity(eid);
     return eid;
 }
 
-export function createWall(gameWorld: GameWorld) {
+export function createWall(gameWorld: GameWorld, clientId: number) {
     const eid = createEID(gameWorld, types.WALL);
     addComponent(gameWorld.world, C_Position, eid, true);
     addComponent(gameWorld.world, C_Body, eid, true);
     addComponent(gameWorld.world, C_Rotation, eid, true);
     addComponent(gameWorld.world, C_HitBouceEffect, eid, true);
     addComponent(gameWorld.world, C_Health, eid, true);
+
+    if (clientId !== -1) {
+        addComponent(gameWorld.world, C_ClientHandle, eid, true);
+        C_ClientHandle.cid[eid] = clientId;
+    }
 
     C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
 
@@ -59,6 +65,7 @@ export function createWall(gameWorld: GameWorld) {
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
 
+    gameWorld.addEntity(eid);
     return eid;
 }
 
@@ -120,6 +127,12 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     Inventory_tryGiveItem(eid, ITEM.SWORD, 1);
     Inventory_tryGiveItem(eid, ITEM.SPEAR, 1);
     Inventory_tryGiveItem(eid, ITEM.WOOD_WALL, 1);
+    Inventory_tryGiveItem(eid, ITEM.STICKS, 1);
+
+    console.log("Adding player", eid);
+    gameWorld.addEntity(eid);
+    console.log("re");
+
     return eid;
 }
 
@@ -141,6 +154,8 @@ export function createTree(gameWorld: GameWorld) {
 
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
+
+    gameWorld.addEntity(eid);
 
     return eid;
 }
@@ -168,5 +183,7 @@ export function createWolf(gameWorld: GameWorld) {
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
 
+    gameWorld.addEntity(eid);
+
     return eid;
-  }
+}

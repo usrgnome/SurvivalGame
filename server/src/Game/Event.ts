@@ -10,6 +10,18 @@ export const removedEvent = {
   cid: -1,
 }
 
+export interface IEventEntityAdded {
+  type: 'string';
+  eid: number;
+  cid: number;
+}
+
+export const addedEvent = {
+  type: 'entityAdded',
+  eid: -1,
+  cid: -1,
+}
+
 export interface IEventEntityHurt {
   eid: number;
   cid: number;

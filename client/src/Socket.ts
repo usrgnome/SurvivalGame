@@ -49,6 +49,15 @@ function Socket_onOpen() {
   GameClient_clearWorld();
 }
 
+export function sendRandomData() {
+  return;
+  const length = 1 + Math.floor(Math.random() * 100);
+  for (let i = 0; i < length; i++) {
+    outStream.writeU8(Math.floor(Math.random() * 0xff));
+  }
+  flushStream();
+}
+
 function Socket_onMessage(data: MessageEvent) {
   if (typeof data.data === "string") {
     console.log(data.data);

@@ -1,4 +1,4 @@
-import { GameClient_enterPressed, GameClient_mouseDown, GameClient_mouseUp, GameClient_tryHit, isChatOpen, renderer } from "./GameClient";
+import { GameClient_enterPressed, GameClient_mouseDown, GameClient_mouseUp, GameClient_selectSlot, GameClient_tryHit, isChatOpen, renderer } from "./GameClient";
 
 let keyState = 0;
 let lastKeyState = 0;
@@ -50,16 +50,16 @@ const defaultKeybinds = {
   [ControlEnum.MOVE_LEFT]: 'KeyA',
   [ControlEnum.MOVE_RIGHT]: 'KeyD',
   [ControlEnum.MOVE_DOWN]: 'KeyS',
-  [ControlEnum.SLOT_1]: 'Digit0',
-  [ControlEnum.SLOT_2]: 'Digit1',
-  [ControlEnum.SLOT_3]: 'Digit2',
-  [ControlEnum.SLOT_4]: 'Digit3',
-  [ControlEnum.SLOT_5]: 'Digit4',
-  [ControlEnum.SLOT_6]: 'Digit5',
-  [ControlEnum.SLOT_7]: 'Digit6',
-  [ControlEnum.SLOT_8]: 'Digit7',
-  [ControlEnum.SLOT_9]: 'Digit8',
-  [ControlEnum.SLOT_10]: 'Digit9',
+  [ControlEnum.SLOT_1]: 'Digit1',
+  [ControlEnum.SLOT_2]: 'Digit2',
+  [ControlEnum.SLOT_3]: 'Digit3',
+  [ControlEnum.SLOT_4]: 'Digit4',
+  [ControlEnum.SLOT_5]: 'Digit5',
+  [ControlEnum.SLOT_6]: 'Digit6',
+  [ControlEnum.SLOT_7]: 'Digit7',
+  [ControlEnum.SLOT_8]: 'Digit8',
+  [ControlEnum.SLOT_9]: 'Digit9',
+  [ControlEnum.SLOT_10]: 'Digit0',
   [ControlEnum.CHAT]: 'Enter',
 }
 
@@ -123,8 +123,38 @@ export function initControls() {
       case KeyBinds[ControlEnum.CHAT]:
         GameClient_enterPressed();
         break;
+      case KeyBinds[ControlEnum.SLOT_1]:
+        if (!isChatOpen) GameClient_selectSlot(0);
+        break;
+      case KeyBinds[ControlEnum.SLOT_2]:
+        if (!isChatOpen) GameClient_selectSlot(1);
+        break;
+      case KeyBinds[ControlEnum.SLOT_3]:
+        if (!isChatOpen) GameClient_selectSlot(2);
+        break;
+      case KeyBinds[ControlEnum.SLOT_4]:
+        if (!isChatOpen) GameClient_selectSlot(3);
+        break;
+      case KeyBinds[ControlEnum.SLOT_5]:
+        if (!isChatOpen) GameClient_selectSlot(4);
+        break;
+      case KeyBinds[ControlEnum.SLOT_6]:
+        if (!isChatOpen) GameClient_selectSlot(5);
+        break;
+      case KeyBinds[ControlEnum.SLOT_7]:
+        if (!isChatOpen) GameClient_selectSlot(6);
+        break;
+      case KeyBinds[ControlEnum.SLOT_8]:
+        if (!isChatOpen) GameClient_selectSlot(7);
+        break;
+      case KeyBinds[ControlEnum.SLOT_9]:
+        if (!isChatOpen) GameClient_selectSlot(8);
+        break;
+      case KeyBinds[ControlEnum.SLOT_10]:
+        if (!isChatOpen) GameClient_selectSlot(9);
+        break;
     }
-  })
+  });
 }
 
 export function stopMoving() {

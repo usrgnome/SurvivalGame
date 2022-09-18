@@ -1,7 +1,7 @@
 import { IWorld } from "bitecs";
 import World from "../GameWorld";
 import { attackTimerQuery, bodyQuery, controlQuery, healthQuery, hitBouceQuery, hungerQuery, mobQuery, mouseQuery, temperatureQuery } from "./Queries";
-import { C_AttackTimer, C_Base, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
+import { C_AttackTimer, C_Base, C_ClientHandle, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
 import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
 import { createWall, NULL_ENTITY } from "./EntityFactory";
@@ -38,8 +38,7 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
         if (item.isStructure) {
           const body = gameWorld.getBody(eid);
 
-          const wall = createWall(gameWorld);
-          gameWorld.addEntity(wall);
+          const wall = createWall(gameWorld, C_ClientHandle.cid[eid]);
 
           const rotation = C_Rotation.rotation[eid];
           const range = 130;

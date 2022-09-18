@@ -41,5 +41,6 @@ export const SPRITE = {
   FOOD_BAR: 39,
   WALL: 40,
   INV_WALL: 42,
+  INV_STICKS: 43,
 }
 

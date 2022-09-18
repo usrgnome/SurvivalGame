@@ -53,6 +53,7 @@ const swordSlotAtlas = new mTexture("img/ui/inv_sword_stone.png", new mPoint(462
 const spearSlotAtlas = new mTexture("img/ui/inv_spear_stone.png", new mPoint(462, 462));
 const stoneSprite = new mTexture("img/entity/stone1.png", new mPoint(520, 549));
 const wolfTexture = new mTexture("img/entity/wolf.png", new mPoint(224, 224));
+const invSticks = new mTexture("img/ui/inv_wood.png", new mPoint(462, 462));
 
 const itemAtlas = new mAtlas("img/item/itemAtlas.png", itemsJSON);
 const decorationAtlas = new mAtlas("img/decoration/decorationAtlas.png", decorationJSON);
@@ -71,6 +72,7 @@ const originPoint = new mPoint(0, 0);
 export const Sprites: any = {
   [SPRITE.TREE]: treeAtlas.frame(originPoint, new mPoint(1148, 543), new mPoint(1148 * .5, 543 * .5), halfScale),
   [SPRITE.SPINNER]: treeAtlas.frame(originPoint, new mPoint(1396, 1352), new mPoint(1396 * .5, 1352 * .5), new mPoint(.1, .1)),
+  [SPRITE.INV_STICKS]: invSticks.frame(originPoint, new mPoint(462, 462), new mPoint(462 / 4, 462 / 4), quaterScale),
   [SPRITE.PLAYER]: playerAtlas.frame("body2", halfScale, halfScale),
   [SPRITE.PLAYER_ARM_L]: playerAtlas.frame("arml2", halfScale, halfScale),
   [SPRITE.PLAYER_ARM_R]: playerAtlas.frame("armr2", halfScale, halfScale),

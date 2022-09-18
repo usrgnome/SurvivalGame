@@ -11,7 +11,7 @@ import { mapData } from './MapData';
 import { assert, get_polygon_centroid, mapVertsToMatterVerts } from '../server/ServerUtils';
 import { collisionLayer, COLLISION_TYPES } from '../server/config';
 import EventEmitter from "events";
-import { actionEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
+import { actionEvent, addedEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
 import { createPlayer, createRock, createTree, createWall, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
 import { logger, loggerLevel } from '../server/Logger';
 
@@ -75,6 +75,7 @@ export default class GameWorld extends EventEmitter {
   private timeUntilNextStatsTick = 0;
 
   _on(name: 'entityRemoved', callback: (e: IEventEntityRemoved) => void): void;
+  _on(name: 'entityAdded', callback: (e: IEventEntityRemoved) => void): void;
   _on(name: 'changeItem', callback: (e: IEventChangeItem) => void): void;
   _on(name: 'hitBounce', callback: (e: IEventHitBounce) => void): void;
   _on(name: 'entityHurt', callback: (e: IEventEntityHurt) => void): void;
@@ -285,53 +286,54 @@ export default class GameWorld extends EventEmitter {
     Composite.add(this.engine.world, this.bodyMap.get(id));
     C_Base.active[id] = +true;
     C_Base.alive[id] = +true;
+
+    addedEvent.cid = -1;
+    addedEvent.eid = id;
+
+    if (hasComponent(this.world, C_ClientHandle, id))
+      addedEvent.cid = C_ClientHandle.cid[id];
+
+    this.emit(addedEvent.type, addedEvent);
   }
 
   /**
    *
    * @description Makes entity inactive in the world
-   * @param {number} id
+   * @param {number} eid
    * @param {boolean} [deleted=false]
    * @return {*} 
    * @memberof World
    */
-  removeEntity(id: number, deleted = false) {
-    if (!C_Base.active[id]) return; // cant remove object that is already removed
-    C_Base.alive[id] = +false;
+  removeEntity(eid: number, deleted = false) {
+    if (!C_Base.active[eid]) return; // cant remove object that is already removed
+    C_Base.alive[eid] = +false;
 
     if (this.isUpdating) {
-      this.toRemoveQueue.push(id);
+      this.toRemoveQueue.push(eid);
     } else {
-      this.entities.remove(id);
-      C_Base.active[id] = +false;
+      this.entities.remove(eid);
+      C_Base.active[eid] = +false;
 
-      if (this.bodyMap.has(id)) {
-        const body = this.bodyMap.get(id);
+      if (this.bodyMap.has(eid)) {
+        const body = this.bodyMap.get(eid);
         Composite.remove(this.engine.world, body);
+        this.bodyMap.delete(eid)
       }
 
-      removedEvent.eid = id;
+      removedEvent.eid = eid;
       removedEvent.cid = -1;
 
-      if (!deleted && hasComponent(this.world, C_ClientHandle, id)) {
-        const cid = C_ClientHandle.cid[id];
+      if (!deleted && hasComponent(this.world, C_ClientHandle, eid)) {
+        const cid = C_ClientHandle.cid[eid];
         removedEvent.cid = cid;
       }
 
+      // remove from ECS
+      console.log("Removing eid", eid);
+      removeEntity(this.world, eid);
+
       this.emit('entityRemoved', removedEvent);
     }
-  }
-
-  /**
-   * Permadently removes entity from ECS world and game world, any thing with a reference to this eid needs to release , if you mean to just remove entity from world, maybe try just doing 'world.removeEntity'
-   * @param eid 
-   * @returns 
-   */
-  deleteEntity(eid: number) {
-    if (eid === -1) return;
-    if (this.isEntityActive(eid)) this.removeEntity(eid, true);
-    removeEntity(this.world, eid);
-    this.bodyMap.delete(eid);
   }
 
   beginAction(eid: number) {
@@ -340,7 +342,7 @@ export default class GameWorld extends EventEmitter {
     this.sweepAttack(eid, C_Position.x[eid], C_Position.y[eid], item.meeleDamage, item.meeleRange, C_Rotation.rotation[eid], item.sweepAngle);
   }
 
-  changeEntityItem(eid: number, itemId: number) {
+  equipItem(eid: number, itemId: number) {
     C_Weilds.itemId[eid] = itemId;
     changeItemEvent.eid = eid;
     changeItemEvent.itemId = itemId;
@@ -646,10 +648,10 @@ export default class GameWorld extends EventEmitter {
     const height = 10000;
     const borderThickness = 100;
 
-    const wall1 = Bodies.rectangle(width * .5, -borderThickness, width, borderThickness, {isStatic: true});
-    const wall2 = Bodies.rectangle(width * .5, height + borderThickness, width, borderThickness, {isStatic: true});
-    const wall3 = Bodies.rectangle(-borderThickness, height * .5, borderThickness, height, {isStatic: true});
-    const wall4 = Bodies.rectangle(width + borderThickness, height * .5, borderThickness, height, {isStatic: true});
+    const wall1 = Bodies.rectangle(width * .5, -borderThickness, width, borderThickness, { isStatic: true });
+    const wall2 = Bodies.rectangle(width * .5, height + borderThickness, width, borderThickness, { isStatic: true });
+    const wall3 = Bodies.rectangle(-borderThickness, height * .5, borderThickness, height, { isStatic: true });
+    const wall4 = Bodies.rectangle(width + borderThickness, height * .5, borderThickness, height, { isStatic: true });
 
     wall1.collisionFilter.category = wall2.collisionFilter.category = wall3.collisionFilter.category = wall4.collisionFilter.category = collisionLayer.ALL;
     wall1.collisionFilter.mask = wall2.collisionFilter.mask = wall3.collisionFilter.mask = wall4.collisionFilter.mask = collisionLayer.ALL;
@@ -672,16 +674,14 @@ export default class GameWorld extends EventEmitter {
       const forrestPolygons = mapData.FORREST.polygons;
       const polygon = forrestPolygons[randomArrayIndex(forrestPolygons)]
 
-
       const tree = createTree(this);
       const body = this.getBody(tree);
 
+      let cnt = 0;
       do {
-      let [x, y] = getRandomPointInPolygon(polygon);
-      this.setBodyPosition(tree, x, y);
-      } while(!this.isStructureAbleToBePlaced(body));
-
-      this.addEntity(tree);
+        let [x, y] = getRandomPointInPolygon(polygon);
+        this.setBodyPosition(tree, x, y);
+      } while (!this.isStructureAbleToBePlaced(body) && (cnt++ < 10));
     }
 
     for (let i = 0; i < 30; i++) {
@@ -691,12 +691,11 @@ export default class GameWorld extends EventEmitter {
       const rock = createRock(this);
       const body = this.getBody(rock);
 
+      let cnt = 0;
       do {
-      let [x, y] = getRandomPointInPolygon(polygon);
-      this.setBodyPosition(rock, x, y);
-      } while(!this.isStructureAbleToBePlaced(body));
-
-      this.addEntity(rock);
+        let [x, y] = getRandomPointInPolygon(polygon);
+        this.setBodyPosition(rock, x, y);
+      } while (!this.isStructureAbleToBePlaced(body) && (cnt++ < 10));
     }
 
 
@@ -706,19 +705,16 @@ export default class GameWorld extends EventEmitter {
       const polygon = mapSegments[randomArrayIndex(mapSegments)]
       const [x, y] = getRandomPointInPolygon(polygon);
       this.setBodyPosition(rock, x, y);
-      this.addEntity(rock);
     }
 
     for (let i = 0; i < 1; i++) {
-      const tree = createWall(this);
+      const tree = createWall(this, -1);
       this.setBodyPosition(tree, 5000, 5000)
-      this.addEntity(tree);
     }
 
     for (let i = 0; i < 0; i++) {
       const wolf = createWolf(this);
       this.setBodyPosition(wolf, Math.random() * 500, Math.random() * 500);
-      this.addEntity(wolf);
     }
 
     logger.log(loggerLevel.info, `GameWorld: finished loading world!`);

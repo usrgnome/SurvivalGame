@@ -11,6 +11,7 @@ interface IItem {
   spriteId: number;
   inventorySprite: number;
   anim: IAnim;
+  craftFrom?: [number, number][];
 }
 
 export interface IStructureItem extends IItem {
@@ -48,6 +49,7 @@ export const ITEM = {
   SWORD: 1,
   SPEAR: 2, 
   WOOD_WALL: 3, 
+  STICKS: 4,
 }
 
 export const Items: IItem[] = [];
@@ -137,4 +139,19 @@ Items[ITEM.WOOD_WALL] = validateStructureItem({
     move: ANIMATION.MOVE_FIST,
     use: ANIMATION.USE_FIST,
   }
-})
+});
+
+Items[ITEM.STICKS] = {
+  isStructure: false,
+  isTool: false,
+  isEquipable: false,
+  isConsumable: false,
+  id: ITEM.FIST,
+  spriteId: -1,
+  inventorySprite: SPRITE.INV_STICKS,
+  anim: {
+    idle: ANIMATION.IDLE_FIST,
+    move: ANIMATION.MOVE_FIST,
+    use: ANIMATION.USE_FIST,
+  }
+};

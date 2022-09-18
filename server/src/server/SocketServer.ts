@@ -19,7 +19,6 @@ export class SocketServer {
                     ws.client.onSocketMessage(message, isBinary);
             },
             upgrade(res, req, context) {
-
                 // log some connection info to help debug
                 const headerObject: any = {};
                 req.forEach((header, value) => headerObject[header] = value);
@@ -38,6 +37,8 @@ export class SocketServer {
         }).listen(port, (listenSocket) => {
             if (listenSocket)
                 logger.log(loggerLevel.info, `GameServer: listening on port: ${port}`);
+            else
+                logger.log(loggerLevel.error, `GameServer: error on port: ${port}`);
         });
     }
 }

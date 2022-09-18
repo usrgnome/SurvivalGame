@@ -245,7 +245,7 @@ export class BufferSchema {
     /*
     *
     */
-    validate(bufferReader: BufferReader, offset = 0): number {
+    validate(bufferReader: BufferReader, offset = bufferReader.offset): number {
         const schema = this.schema;
         const bufferSize = bufferReader.size();
 

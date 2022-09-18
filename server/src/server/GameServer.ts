@@ -31,7 +31,18 @@ export default class GameServer {
       // if the removed entity has an associated client, let the client know he died
       if (this.clients.has(cid)) {
         const client = this.clients.find(cid);
-        this.clientPlayerRemoved(client);
+        client.ownedEntities.remove(eid);
+        if(client.eid === eid) this.clientPlayerRemoved(client);
+      }
+    });
+
+    this.gameWorld._on('entityAdded', (e) => {
+      const { cid, eid } = e;
+
+      // 
+      if (this.clients.has(cid)) {
+        const client = this.clients.find(cid);
+        client.ownedEntities.insert(eid);
       }
     });
 
@@ -305,6 +316,7 @@ export default class GameServer {
     const stream = client.stream;
     stream.writeU8(SERVER_HEADER.DIED);
     client.flushStream(); // need to flush the current buffer to the client
+    client.onDied();
   }
 
   sendInventory(eid: number, client: Client) {
