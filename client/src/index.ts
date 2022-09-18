@@ -9,7 +9,7 @@ console.log(Stats);
 
 const stats = Stats();
 
-document.body.appendChild(stats.dom);
+//document.body.appendChild(stats.dom);
 
 function init() {
   initControls();

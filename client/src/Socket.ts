@@ -62,7 +62,7 @@ function Socket_onMessage(data: MessageEvent) {
   if (typeof data.data === "string") {
     console.log(data.data);
     if (data.data === "ready") {
-      if (isDev()) setTimeout(() => requestRespawn("DEV_RESPAWN"), 500);
+      //if (isDev()) setTimeout(() => requestRespawn("DEV_RESPAWN"), 500);
     } else {
     }
   } else {
