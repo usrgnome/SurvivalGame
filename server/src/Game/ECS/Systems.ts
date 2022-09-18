@@ -57,6 +57,7 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
 }
 
 export const hungerSystem = (gameWorld: World, world: IWorld) => {
+  return;
   const ents = hungerQuery(world);
   for (let i = 0; i < ents.length; i++) {
     const eid = ents[i]
