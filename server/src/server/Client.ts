@@ -295,7 +295,6 @@ export class Client {
   onPong() {
     const seqId = this.inStream.readU8();
 
-    //console.log(seqId, this.waitingForPingSeqId);
     if (seqId === this.waitingForPingSeqId) {
       this.waitingForPingSeqId = -1;
 
@@ -306,6 +305,7 @@ export class Client {
       this.sendPingTime(Math.min(difference, 0xFFFF));
     }
   }
+
 
   ping() {
     if (this.waitingForPingSeqId !== -1) return;

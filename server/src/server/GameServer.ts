@@ -114,8 +114,7 @@ export default class GameServer {
     const clients = this.clients.array;
     for (let u = 0; u < clients.length; u++) {
       const client = clients[u];
-      if (client.ready) client.buildSnapshot();
-      client.ping();
+      if (client.ready) { client.buildSnapshot(); client.ping(); }
       client.flushStream();
     }
     const end = Date.now();
