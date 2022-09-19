@@ -15,7 +15,7 @@
       backdrop-filter: blur(10px);
     }
 
-    .play-wrapper {
+    .play-wrapperr {
       margin: auto;
       position: absolute;
       top: 50%;
@@ -100,7 +100,7 @@
       flex-direction: row;
       justify-content: space-evenly;
     }
-    
+
     .profile-btn {
       border: 5px solid #141414;
       border-radius: 13px;
@@ -120,7 +120,7 @@
       margin: 2px;
     }
 
-    .profile-level{
+    .profile-level {
       border: 5px solid #141414;
       border-radius: 13px;
       cursor: url(img/ui/cursor-default.png) 6 0, default;
@@ -138,6 +138,16 @@
       padding: 8px 10px;
       margin: 2px;
     }
+
+    .popup {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: red;
+    }
   </style>
 </head>
 
@@ -145,23 +155,25 @@
   <canvas id="canvas"></canvas>
   <div class="homepage-container" id="homepage">
     <div class="play-wrapper">
-      <div class="input-field">
-        <input id="nickname-input" type="text" placeholder="Enter your username" maxlength="12">
-
-        <div id="play-section">
-          <div id="server-btn" class="btn">Europe #1</div>
-          <div id="play-btn" class="btn">Play!</div>
+      <div class="play-wrapperr">
+        <div class="input-field">
+          <input id="nickname-input" type="text" placeholder="Enter your username" maxlength="12">
+          <div id="play-section">
+            <div id="server-btn" class="btn">Europe #1</div>
+            <div id="play-btn" class="btn">Play!</div>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-inner">
+        <div class="profile-btn">Profile</div>
+        <div class="profile-level">3</div>
       </div>
     </div>
   </div>
 
-  <div class="profile-section">
-    <div class="profile-inner">
-      <div class="profile-btn">Profile</div>
-      <div class="profile-level">3</div>
-    </div>
-  </div>
 
 
   <div class="chat-container" id="chat-wrapper" style="display: none;">

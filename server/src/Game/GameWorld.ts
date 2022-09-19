@@ -1,5 +1,5 @@
 import { createWorld, removeEntity, hasComponent } from 'bitecs'
-import { Engine, Common, Events, Composite, Bodies, Runner, Body, Query, Vector } from "matter-js";
+import { Engine, Common, Events, Composite, Bodies, Runner, Body, Query, Vector, Detector } from "matter-js";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { C_AttackTimer, C_Base, C_ClientHandle, C_GivesScore, C_Health, C_HitBouceEffect, C_Leaderboard, C_Position, C_Rotation, C_TerrainInfo, C_Weilds } from "./ECS/Components";
 import { Items, IToolItem } from '../../../shared/Item';
@@ -12,7 +12,7 @@ import { assert, get_polygon_centroid, mapVertsToMatterVerts } from '../server/S
 import { collisionLayer, COLLISION_TYPES } from '../server/config';
 import EventEmitter from "events";
 import { actionEvent, addedEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
-import { createPlayer, createRock, createTree, createWall, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
+import EntityFactory, { createPlayer, createRock, createTree, createWall, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
 import { logger, loggerLevel } from '../server/Logger';
 
 Common.setDecomp(decomp);
@@ -74,6 +74,8 @@ export default class GameWorld extends EventEmitter {
 
   private timeUntilNextStatsTick = 0;
 
+  private cachedStructures: { [key: string]: Body } = {};
+
   _on(name: 'entityRemoved', callback: (e: IEventEntityRemoved) => void): void;
   _on(name: 'entityAdded', callback: (e: IEventEntityRemoved) => void): void;
   _on(name: 'changeItem', callback: (e: IEventChangeItem) => void): void;
@@ -84,6 +86,8 @@ export default class GameWorld extends EventEmitter {
   _on(name: string, callback: (e: any) => void) {
     this.on(name, callback);
   }
+
+
 
   constructor() {
     super();
@@ -257,9 +261,13 @@ export default class GameWorld extends EventEmitter {
   private loadForType(type: keyof typeof mapData, label: keyof typeof COLLISION_TYPES, category: number, mask: number, sensor: boolean, isStatic: boolean = false) {
     mapData[type].polygons.forEach(polygon => {
       const vertices = mapVertsToMatterVerts(polygon);
-      const body = Bodies.fromVertices(0, 0, vertices, { isSensor: sensor, isStatic: (isStatic && !sensor) }); // cant be sensor and static, so sensor will override static property
-      body.collisionFilter.category = category;
-      body.collisionFilter.mask = mask;
+      const body = Bodies.fromVertices(0, 0, vertices, {
+        isSensor: sensor, isStatic: (isStatic && !sensor), collisionFilter: {
+          mask,
+          category,
+        }
+      }); // cant be sensor and static, so sensor will override static property
+      console.log("creating body with mask", mask)
       body.parts.forEach(part => part.label = label);
       const center = get_polygon_centroid(vertices);
       Body.setPosition(body, Vector.create(center.x, center.y));
@@ -271,7 +279,10 @@ export default class GameWorld extends EventEmitter {
         }
       }
 
+      console.log(body.collisionFilter);
       Composite.add(this.engine.world, body);
+
+      setTimeout(() => { console.log(body.collisionFilter) }, 10000);
     })
   }
 
@@ -428,8 +439,33 @@ export default class GameWorld extends EventEmitter {
     return Query.collides(body, this.engine.world.bodies);
   }
 
-  isStructureAbleToBePlaced(body: Body) {
-    return this.queryBodyPrecise(body).length === 1;
+  canPlaceStructure(type: number, x: number, y: number) {
+    if (!(type in this.cachedStructures)) {
+      const eid = EntityFactory[type](this, -1, false);
+      const body = this.getBody(eid);
+      this.cachedStructures[type] = body;
+      body.collisionFilter.mask = collisionLayer.ENVIRONMENT | collisionLayer.STRUCTURE | collisionLayer.MOB;
+    }
+
+    const body = this.cachedStructures[type];
+    Body.setPosition(body, Vector.create(x, y));
+    const query = this.queryBodyPrecise(body);
+
+    let count = 0;
+    for (let i = 0; i < query.length; i++) {
+      const pair = query[i];
+      const otherBody = pair.bodyA === body ? pair.bodyB : pair.bodyA;
+
+      if (otherBody.collisionFilter.category & body.collisionFilter.mask) {
+        count++;
+      }
+    }
+
+    return count === 0;
+  }
+
+  willBodyOverlap(body: Body) {
+    return this.queryBodyPrecise(body).length <= 1;
   }
 
   private onEntityDie(eid: number) {
@@ -663,10 +699,10 @@ export default class GameWorld extends EventEmitter {
 
     logger.log(loggerLevel.info, `GameWorld: loading terrain`);
 
-    this.loadForType("OCEAN", "OCEAN", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
-    this.loadForType("FORREST", "LAND", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
-    this.loadForType("SNOW", "SNOW", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
-    this.loadForType("LAVA", "LAVA", collisionLayer.ENVIRONMENT, collisionLayer.MOB, true, true);
+    this.loadForType("OCEAN", "OCEAN", collisionLayer.BIOME, collisionLayer.MOB, true, true);
+    this.loadForType("FORREST", "LAND", collisionLayer.BIOME, collisionLayer.MOB, true, true);
+    this.loadForType("SNOW", "SNOW", collisionLayer.BIOME, collisionLayer.MOB, true, true);
+    this.loadForType("LAVA", "LAVA", collisionLayer.BIOME, collisionLayer.MOB, true, true);
 
     logger.log(loggerLevel.info, `GameWorld: spawning map entities`);
 
@@ -681,7 +717,7 @@ export default class GameWorld extends EventEmitter {
       do {
         let [x, y] = getRandomPointInPolygon(polygon);
         this.setBodyPosition(tree, x, y);
-      } while (!this.isStructureAbleToBePlaced(body) && (cnt++ < 10));
+      } while (!this.willBodyOverlap(body) && (cnt++ < 10));
     }
 
     for (let i = 0; i < 30; i++) {
@@ -695,7 +731,7 @@ export default class GameWorld extends EventEmitter {
       do {
         let [x, y] = getRandomPointInPolygon(polygon);
         this.setBodyPosition(rock, x, y);
-      } while (!this.isStructureAbleToBePlaced(body) && (cnt++ < 10));
+      } while (!this.willBodyOverlap(body) && (cnt++ < 10));
     }
 
 

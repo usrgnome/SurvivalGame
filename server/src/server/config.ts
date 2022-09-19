@@ -1,6 +1,8 @@
 export const collisionLayer = {
-  MOB: 0x01,
-  ENVIRONMENT: 0x02,
+  MOB: 1 << 0,
+  ENVIRONMENT: 1 << 1,
+  STRUCTURE: 1 << 2,
+  BIOME: 1 << 3,
   ALL: 0xffff,
 }
 

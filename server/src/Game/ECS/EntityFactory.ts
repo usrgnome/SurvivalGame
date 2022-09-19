@@ -8,6 +8,8 @@ import GameWorld from "../GameWorld";
 import { Inventory_tryGiveItem } from "../Inventory";
 
 export const NULL_ENTITY = -1;
+const EntityFactory: { [key: string]: (world: GameWorld, clientId: number, addToWorld: boolean) => number } = {}
+export default EntityFactory;
 
 function createEID(gameWorld: GameWorld, type: number) {
     const eid = addEntity(gameWorld.world);
@@ -27,9 +29,13 @@ export function createRock(gameWorld: GameWorld) {
 
     C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
 
-    const body = Bodies.circle(0, 0, 110);
-    body.collisionFilter.category = collisionLayer.ENVIRONMENT;
-    Body.setStatic(body, true);
+    const body = Bodies.circle(0, 0, 110, {
+        collisionFilter: {
+            category: collisionLayer.ENVIRONMENT,
+            mask: collisionLayer.MOB,
+        },
+        isStatic: true,
+    });
     //@ts-ignore
     body.eid = eid;
 
@@ -40,7 +46,7 @@ export function createRock(gameWorld: GameWorld) {
     return eid;
 }
 
-export function createWall(gameWorld: GameWorld, clientId: number) {
+export function createWall(gameWorld: GameWorld, clientId: number, addToWorld: boolean = true) {
     const eid = createEID(gameWorld, types.WALL);
     addComponent(gameWorld.world, C_Position, eid, true);
     addComponent(gameWorld.world, C_Body, eid, true);
@@ -55,9 +61,14 @@ export function createWall(gameWorld: GameWorld, clientId: number) {
 
     C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
 
-    const body = Bodies.circle(0, 0, 60);
-    body.collisionFilter.category = collisionLayer.ENVIRONMENT;
-    Body.setStatic(body, true);
+    const body = Bodies.circle(0, 0, 60, {
+        collisionFilter: {
+            category: collisionLayer.STRUCTURE,
+            mask: collisionLayer.MOB,
+        },
+        isStatic: true,
+    });
+
     //@ts-ignore
     body.eid = eid;
 
@@ -65,9 +76,11 @@ export function createWall(gameWorld: GameWorld, clientId: number) {
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
 
-    gameWorld.addEntity(eid);
+    if(addToWorld) gameWorld.addEntity(eid);
     return eid;
 }
+
+EntityFactory[types.WALL] = createWall;
 
 /**
  * @description Creates a player entity. Pass -1 as clientId for no associated client handle
@@ -102,7 +115,7 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
         label: 'LAND_CREATURE',
         collisionFilter: {
             category: collisionLayer.MOB,
-            mask: collisionLayer.ENVIRONMENT,
+            mask: collisionLayer.ENVIRONMENT | collisionLayer.STRUCTURE,
         },
         friction: 0,
         density: 1,
@@ -120,7 +133,7 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     C_Health.health[eid] = C_Health.maxHealth[eid] = 100;
     C_Hunger.hunger[eid] = C_Hunger.maxHunger[eid] = 100;
     C_Breath.breath[eid] = C_Breath.maxBreath[eid] = 100;
-    C_Temperature.temperate[eid] = 100;
+    C_Temperature.temperate[eid] = 50;
     C_Controls.vel[eid] = 0.200;
     C_GivesScore.deathScore[eid] = 1;
 
@@ -145,9 +158,13 @@ export function createTree(gameWorld: GameWorld) {
 
     C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
 
-    const body = Bodies.circle(0, 0, 110);
-    body.collisionFilter.category = collisionLayer.ENVIRONMENT;
-    Body.setStatic(body, true);
+    const body = Bodies.circle(0, 0, 110, {
+        collisionFilter: {
+            category: collisionLayer.ENVIRONMENT,
+            mask: collisionLayer.MOB,
+        },
+        isStatic: true,
+    });
 
     //@ts-ignore
     body.eid = eid;
@@ -187,3 +204,4 @@ export function createWolf(gameWorld: GameWorld) {
 
     return eid;
 }
+

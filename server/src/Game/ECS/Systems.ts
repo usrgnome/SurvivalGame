@@ -6,6 +6,7 @@ import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
 import { createWall, NULL_ENTITY } from "./EntityFactory";
 import { Items, IToolItem } from "../../../../shared/Item";
+import { types } from "../../../../shared/EntityTypes";
 
 export const bodySystem = (gameWorld: World, world: IWorld) => {
   const ents = bodyQuery(world)
@@ -36,16 +37,21 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
         //gameWorld.server.sendAction(eid, Items[C_Weilds.itemId[eid]].anim.use);
         const item = Items[C_Weilds.itemId[eid]];
         if (item.isStructure) {
-          const body = gameWorld.getBody(eid);
-
-          const wall = createWall(gameWorld, C_ClientHandle.cid[eid]);
-
           const rotation = C_Rotation.rotation[eid];
           const range = 130;
           const x = Math.cos(rotation) * range;
           const y = Math.sin(rotation) * range;
+          const body = gameWorld.getBody(eid);
+          const placeX = x + body.position.x;
+          const placeY = y + body.position.y;
 
-          gameWorld.setBodyPosition(wall, body.position.x + x, body.position.y + y);
+          if (gameWorld.canPlaceStructure(types.WALL, placeX, placeY)) {
+            const wall = createWall(gameWorld, C_ClientHandle.cid[eid]);
+            C_Rotation.rotation[wall] = C_Rotation.rotation[eid];
+            gameWorld.setBodyPosition(wall, body.position.x + x, body.position.y + y);
+          }
+
+          C_Mouse.mouseDown[eid] = +false;
         } else if (item.isTool) {
           const tool = item as IToolItem;
           gameWorld.onActionStart(eid, tool.anim.use)

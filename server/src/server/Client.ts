@@ -144,7 +144,7 @@ export class Client {
   }
 
 
-  removeOwnedEntities(){
+  removeOwnedEntities() {
     const ownedEntities = this.ownedEntities.array.slice();
     for (let i = 0; i < ownedEntities.length; i++) {
       const eid = ownedEntities[i];
@@ -206,10 +206,21 @@ export class Client {
           const itemId = C_Inventory.items[eid][slotOffset];
           const item = Items[itemId];
 
-          if (item.isTool)
-            this.server.gameWorld.equipItem(eid, itemId);
-          else if (item.isStructure)
-            this.server.gameWorld.equipItem(eid, itemId);
+          if (item.isTool) {
+            this.server.gameWorld.equipItem(eid, itemId)
+            const stream = this.stream;
+            stream.writeU8(SERVER_HEADER.BUILD_MODE);
+            stream.writeU8(0);
+            stream.writeU8(item.id);
+          }
+          else if (item.isStructure) {
+            this.server.gameWorld.equipItem(eid, itemId)
+            const stream = this.stream;
+            stream.writeU8(SERVER_HEADER.BUILD_MODE);
+            stream.writeU8(1);
+            stream.writeU8(item.id);
+          }
+
           break;
         }
         case CLIENT_HEADER.CHAT: {
@@ -283,6 +294,8 @@ export class Client {
 
   onPong() {
     const seqId = this.inStream.readU8();
+
+    //console.log(seqId, this.waitingForPingSeqId);
     if (seqId === this.waitingForPingSeqId) {
       this.waitingForPingSeqId = -1;
 

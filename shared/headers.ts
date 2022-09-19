@@ -16,6 +16,7 @@ export const SERVER_HEADER = {
   CHAT: 14,
   PING: 15,
   PING_RESPONSE: 16,
+  BUILD_MODE: 17,
 }
 
 export const CLIENT_HEADER = {

@@ -19,6 +19,8 @@ import { isDev, isProd } from "./dev";
 import { debugInfo, Debug_init, Debug_update, Debug_updatePing, Debug_updateServerVersion } from "./UI/Debug";
 import QuadNode from "./QuadNode";
 import { WallEntity } from "./Entity/WallEntity";
+import { SPRITE } from "../../shared/Sprite";
+import { Sprite, Sprites } from "./Sprites";
 
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -58,6 +60,10 @@ const mapData = { "FORREST": { "color": "#71b47c", "polygons": [[4583.5559467022
 const vertices: number[] = [];
 const colours: string[] = [];
 const colorMap: string[] = [];
+
+const highlight = new mSprite(Sprites[SPRITE.WALL]);
+worldLayer2.add(highlight);
+highlight.visible = false;
 
 const tree = new QuadNode({ minx: 0, miny: 0, maxx: 10000, maxy: 10000 }, 4, 10);
 
@@ -272,20 +278,20 @@ export function GameClient_update(now: number, delta: number) {
   }
 
   if (dir) {
-    v += delta / 5;
+    v += delta / 3;
     if (v >= 1) {
       v = 1;
       dir = 0;
     }
   } else {
-    v -= delta / 5;
+    v -= delta / 3;
     if (v <= 0) {
       v = 0;
       dir = 1;
     }
   }
 
-  const color = numberToHexStr(lerpColor(0x396ec4, 0x326cc9, v));
+  const color = numberToHexStr(lerpColor(0x1daad1, 0x326cc9, v));
   for (let i = 0; i < oceanPolys.length; i++) {
     oceanPolys[i].color = color;
   }
@@ -375,6 +381,11 @@ export function GameClient_update(now: number, delta: number) {
       buffer.geometry.push(...result.vertices);
       buffer.colours.push(result.color);
     }
+
+    const rotation = sprite.rotation + Math.PI * .5;
+    highlight.position.x = x + Math.cos(rotation) * 130;
+    highlight.position.y = y + Math.sin(rotation) * 130;
+    highlight.rotation = rotation;
   }
 }
 
@@ -583,5 +594,18 @@ export function GameClient_unpackLeaderboard() {
 
   for (let i = lbSize; i < Leaderboard_maxSize; i++) {
     Leaderboard_showValue(i, false);
+  }
+}
+
+export function GameClient_unpackBuildMode(){
+  const inBuildMode = !!inStream.readU8();
+  const itemId = inStream.readU8();
+
+  if(inBuildMode){
+    const item = Items[itemId];
+    highlight.frame = Sprites[item.spriteId];
+    highlight.visible = true;
+  } else {
+    highlight.visible = false;
   }
 }
