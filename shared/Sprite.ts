@@ -42,5 +42,6 @@ export const SPRITE = {
   WALL: 40,
   INV_WALL: 42,
   INV_STICKS: 43,
+  INV_STONE: 44,
 }
 

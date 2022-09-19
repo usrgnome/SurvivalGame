@@ -26,6 +26,7 @@ export function createRock(gameWorld: GameWorld) {
     addComponent(gameWorld.world, C_Body, eid, true);
     addComponent(gameWorld.world, C_Rotation, eid, true);
     addComponent(gameWorld.world, C_HitBouceEffect, eid, true);
+    addComponent(gameWorld.world, C_GivesResource, eid, true);
 
     C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
 
@@ -41,6 +42,8 @@ export function createRock(gameWorld: GameWorld) {
 
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
+    C_GivesResource.resource[eid] = ITEM.STONE;
+    C_GivesResource.quantity[eid] = 3;
 
     gameWorld.addEntity(eid);
     return eid;

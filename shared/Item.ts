@@ -50,6 +50,7 @@ export const ITEM = {
   SPEAR: 2, 
   WOOD_WALL: 3, 
   STICKS: 4,
+  STONE: 5,
 }
 
 export const Items: IItem[] = [];
@@ -146,9 +147,24 @@ Items[ITEM.STICKS] = {
   isTool: false,
   isEquipable: false,
   isConsumable: false,
-  id: ITEM.FIST,
+  id: ITEM.STICKS,
   spriteId: -1,
   inventorySprite: SPRITE.INV_STICKS,
+  anim: {
+    idle: ANIMATION.IDLE_FIST,
+    move: ANIMATION.MOVE_FIST,
+    use: ANIMATION.USE_FIST,
+  }
+};
+
+Items[ITEM.STONE] = {
+  isStructure: false,
+  isTool: false,
+  isEquipable: false,
+  isConsumable: false,
+  id: ITEM.STONE,
+  spriteId: -1,
+  inventorySprite: SPRITE.INV_STONE,
   anim: {
     idle: ANIMATION.IDLE_FIST,
     move: ANIMATION.MOVE_FIST,

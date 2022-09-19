@@ -2,7 +2,7 @@ import ObjectManager from "../../../shared/lib/ObjectManager";
 import { WebSocket } from "uWebSockets.js";
 import { Client } from "./Client";
 import { SERVER_HEADER } from "../../../shared/headers";
-import { C_Health, C_Hunger, C_Inventory, C_Temperature } from "../Game/ECS/Components";
+import { C_Health, C_Hunger, C_Inventory, C_Position, C_Temperature } from "../Game/ECS/Components";
 import GameWorld from "../Game/GameWorld";
 import { SocketServer } from "./SocketServer";
 import NanoTimer from "./NanoTimer";
@@ -58,6 +58,17 @@ export default class GameServer {
           this.updateStats(client, health, hunger, temperate);
         }
       }
+
+      const clients = this.clients.array;
+      for (let i = 0; i < clients.length; i++) {
+        const client = clients[i];
+        if (!client.ready) continue;
+        const stream = client.stream;
+        stream.writeU8(SERVER_HEADER.HURT);
+        stream.writeLEB128(eid);
+        stream.writeF32(C_Position.x[eid]);
+        stream.writeF32(C_Position.y[eid]);
+      }
     });
 
     this.gameWorld._on('hitBounce', (e) => {
@@ -91,12 +102,10 @@ export default class GameServer {
     });
 
     this.gameWorld._on('inventoryChange', (e) => {
-      const { eid, cid } = e;
-
-        console.log("Invetory changed!");
+      const { cid } = e;
       if (this.clients.has(cid)) {
         const client = this.clients.find(cid);
-        this.sendInventory(eid, client);
+        client.inventoryDirty = true;
       }
     })
   }

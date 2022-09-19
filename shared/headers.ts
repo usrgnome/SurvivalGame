@@ -17,6 +17,7 @@ export const SERVER_HEADER = {
   PING: 15,
   PING_RESPONSE: 16,
   BUILD_MODE: 17,
+  HURT: 18,
 }
 
 export const CLIENT_HEADER = {

@@ -21,6 +21,7 @@ import QuadNode from "./QuadNode";
 import { WallEntity } from "./Entity/WallEntity";
 import { SPRITE } from "../../shared/Sprite";
 import { Sprite, Sprites } from "./Sprites";
+import { addParticle, ParticleContainer_update } from "./ParticleContainer";
 
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -290,6 +291,8 @@ export function GameClient_update(now: number, delta: number) {
       dir = 1;
     }
   }
+
+  ParticleContainer_update(delta);
 
   const color = numberToHexStr(lerpColor(0x1daad1, 0x326cc9, v));
   for (let i = 0; i < oceanPolys.length; i++) {
@@ -597,15 +600,27 @@ export function GameClient_unpackLeaderboard() {
   }
 }
 
-export function GameClient_unpackBuildMode(){
+export function GameClient_unpackBuildMode() {
   const inBuildMode = !!inStream.readU8();
   const itemId = inStream.readU8();
 
-  if(inBuildMode){
+  if (inBuildMode) {
     const item = Items[itemId];
     highlight.frame = Sprites[item.spriteId];
     highlight.visible = true;
   } else {
     highlight.visible = false;
+  }
+}
+
+export function GameClient_unpackHurt() {
+  const eid = inStream.readULEB128();
+  const x = inStream.readF32();
+  const y = inStream.readF32();
+  const total = 1 + Math.floor(Math.random() * 3);
+  const type = GameClient_entities.find(eid).type;
+
+  for (let i = 0; i < total; i++) {
+    addParticle(type === types.PLAYER ? SPRITE.FLOWER7 : SPRITE.FLOWER2, x, y);
   }
 }

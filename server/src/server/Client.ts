@@ -44,6 +44,8 @@ export class Client {
   visibleEntities = new EntityIdManager();
   ownedEntities = new EntityIdManager();
 
+  inventoryDirty: boolean = false;
+
   constructor(server: GameServer, socket: WebSocket) {
     socket.client = this;
     this.server = server;
@@ -141,6 +143,21 @@ export class Client {
     }
 
     TMP_ENTITY_MANAGER.clear();
+
+    if (this.inventoryDirty) {
+      this.inventoryDirty = false;
+      const eid = this.eid;
+      const inventory = C_Inventory.items[eid];
+
+      const size = inventory.length / 2;
+      stream.writeU8(SERVER_HEADER.INVENTORY);
+      stream.writeU8(size);
+
+      for (let i = 0; i < size; i++) {
+        stream.writeU16(inventory[i * 2 + 0]);
+        stream.writeU16(inventory[i * 2 + 1]);
+      }
+    }
   }
 
 

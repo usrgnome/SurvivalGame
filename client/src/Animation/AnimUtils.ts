@@ -98,7 +98,7 @@ export const AnimEasing = {
   easeInOutQuint: 12,
 };
 
-const EASING_FUNCTIONS: { [a: number]: (t: number) => number } = {
+export const EASING_FUNCTIONS: { [a: number]: (t: number) => number } = {
   [AnimEasing.easeInQuad]: (t) => t * t,
   [AnimEasing.easeOutQuad]: (t) => t * (2 - t),
   [AnimEasing.easeInOutQuad]: (t) => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
