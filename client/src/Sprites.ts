@@ -72,7 +72,7 @@ const originPoint = new mPoint(0, 0);
 export const Sprites: any = {
   [SPRITE.TREE]: treeAtlas.frame(originPoint, new mPoint(1148, 543), new mPoint(1148 * .5, 543 * .5), halfScale),
   [SPRITE.SPINNER]: treeAtlas.frame(originPoint, new mPoint(1396, 1352), new mPoint(1396 * .5, 1352 * .5), new mPoint(.1, .1)),
-  [SPRITE.INV_STICKS]: invSticks.frame(originPoint, new mPoint(462, 462), new mPoint(462 / 4, 462 / 4), quaterScale),
+  [SPRITE.INV_STICKS]: invSticks.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),
   [SPRITE.PLAYER]: playerAtlas.frame("body2", halfScale, halfScale),
   [SPRITE.PLAYER_ARM_L]: playerAtlas.frame("arml2", halfScale, halfScale),
   [SPRITE.PLAYER_ARM_R]: playerAtlas.frame("armr2", halfScale, halfScale),
@@ -83,7 +83,7 @@ export const Sprites: any = {
   [SPRITE.HEALTH_BAR_BG_COLOR]: healthBarBgColor.frame(originPoint, new mPoint(293, 60), new mPoint(293 * .5, 60 * .5), halfScale),
   [SPRITE.LEADERBOARD_BG]: leaderboardBg.frame(originPoint, new mPoint(500, 660), new mPoint(0, 0), halfScale),
   [SPRITE.WALL]: wall.frame(originPoint, new mPoint(297, 287), new mPoint(297 * .5, 298 * .5), halfScale),
-  [SPRITE.INV_WALL]: invWall.frame(originPoint, new mPoint(159, 179), originPoint, halfScale),
+  [SPRITE.INV_WALL]: invWall.frame(originPoint, new mPoint(159, 179), new mPoint(0, 0), halfScale),
   [SPRITE.SLOT]: slotAtlas.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),
   [SPRITE.WOLF]: wolfTexture.frame(originPoint, new mPoint(224, 224), new mPoint(224 * .5, 224 * .5), new mPoint(.8, .8)),
   [SPRITE.INV_SPEAR_SLOT]: spearSlotAtlas.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),

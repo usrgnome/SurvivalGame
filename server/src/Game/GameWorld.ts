@@ -1,7 +1,7 @@
 import { createWorld, removeEntity, hasComponent } from 'bitecs'
 import { Engine, Common, Events, Composite, Bodies, Runner, Body, Query, Vector, Detector } from "matter-js";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
-import { C_AttackTimer, C_Base, C_ClientHandle, C_GivesScore, C_Health, C_HitBouceEffect, C_Leaderboard, C_Position, C_Rotation, C_TerrainInfo, C_Weilds } from "./ECS/Components";
+import { C_AttackTimer, C_Base, C_ClientHandle, C_GivesResource, C_GivesScore, C_Health, C_HitBouceEffect, C_Inventory, C_Leaderboard, C_Position, C_Rotation, C_TerrainInfo, C_Weilds } from "./ECS/Components";
 import { Items, IToolItem } from '../../../shared/Item';
 import decomp from "poly-decomp"
 import { angleDifference, getRandomPointInPolygon, randomArrayIndex } from '../../../shared/Utilts';
@@ -11,9 +11,10 @@ import { mapData } from './MapData';
 import { assert, get_polygon_centroid, mapVertsToMatterVerts } from '../server/ServerUtils';
 import { collisionLayer, COLLISION_TYPES } from '../server/config';
 import EventEmitter from "events";
-import { actionEvent, addedEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventTickStats, removedEvent, tickStatsEvent } from './Event';
+import { actionEvent, addedEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventInventoryChange, IEventTickStats, inventoryChangeEvent, removedEvent, tickStatsEvent } from './Event';
 import EntityFactory, { createPlayer, createRock, createTree, createWall, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
 import { logger, loggerLevel } from '../server/Logger';
+import { Inventory_tryGiveItem } from './Inventory';
 
 Common.setDecomp(decomp);
 
@@ -78,6 +79,7 @@ export default class GameWorld extends EventEmitter {
 
   _on(name: 'entityRemoved', callback: (e: IEventEntityRemoved) => void): void;
   _on(name: 'entityAdded', callback: (e: IEventEntityRemoved) => void): void;
+  _on(name: 'inventoryChange', callback: (e: IEventInventoryChange) => void): void;
   _on(name: 'changeItem', callback: (e: IEventChangeItem) => void): void;
   _on(name: 'hitBounce', callback: (e: IEventHitBounce) => void): void;
   _on(name: 'entityHurt', callback: (e: IEventEntityHurt) => void): void;
@@ -86,8 +88,6 @@ export default class GameWorld extends EventEmitter {
   _on(name: string, callback: (e: any) => void) {
     this.on(name, callback);
   }
-
-
 
   constructor() {
     super();
@@ -486,25 +486,45 @@ export default class GameWorld extends EventEmitter {
 
     if (!this.isEntityActive(eid)) return;
 
-    const health = C_Health.health[eid];
-    const newHealth = Math.floor(health - damage);
+    if (hasComponent(this.world, C_Health, eid)) {
+      const health = C_Health.health[eid];
+      const newHealth = Math.floor(health - damage);
 
-    if (newHealth <= 0) {
-      C_Health.health[eid] = 0;
-      if (originEntity !== NULL_ENTITY)
-        this.onEntityKilled(eid, originEntity);
-      this.onEntityDie(eid);
-    } else {
-      C_Health.health[eid] = newHealth;
+      if (newHealth <= 0) {
+        C_Health.health[eid] = 0;
+        if (originEntity !== NULL_ENTITY)
+          this.onEntityKilled(eid, originEntity);
+        this.onEntityDie(eid);
+      } else {
+        C_Health.health[eid] = newHealth;
 
-      hurtEvent.eid = eid;
-      hurtEvent.cid = -1;
-      hurtEvent.health = newHealth;
+        hurtEvent.eid = eid;
+        hurtEvent.cid = -1;
+        hurtEvent.health = newHealth;
 
-      if (hasComponent(this.world, C_ClientHandle, eid))
-        hurtEvent.cid = C_ClientHandle.cid[eid];
+        if (hasComponent(this.world, C_ClientHandle, eid))
+          hurtEvent.cid = C_ClientHandle.cid[eid];
 
+      }
       this.emit(hurtEvent.type, hurtEvent);
+    }
+    if (
+      originEntity !== NULL_ENTITY &&
+      hasComponent(this.world, C_GivesResource, eid) &&
+      hasComponent(this.world, C_Inventory, originEntity)
+    ) {
+      const didAddItem = Inventory_tryGiveItem(originEntity, C_GivesResource.resource[eid], C_GivesResource.quantity[eid]);
+
+      console.log(didAddItem);
+      if (
+        didAddItem &&
+        hasComponent(this.world, C_ClientHandle, originEntity)
+      ) {
+        console.log("semititng event!");
+        inventoryChangeEvent.cid = C_ClientHandle.cid[originEntity];
+        inventoryChangeEvent.eid = originEntity;
+        this.emit(inventoryChangeEvent.type, inventoryChangeEvent);
+      }
     }
   }
 
@@ -563,8 +583,7 @@ export default class GameWorld extends EventEmitter {
         }
       }
 
-      if (hasComponent(this.world, C_Health, targetEid))
-        this.damage(targetEid, damage, dealer);
+      this.damage(targetEid, damage, dealer);
 
       if (dealer !== -1 && hasComponent(this.world, C_Leaderboard, dealer) && hasComponent(this.world, C_GivesScore, targetEid))
         C_Leaderboard.score[dealer] += C_GivesScore.hitScore[targetEid];

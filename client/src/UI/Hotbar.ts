@@ -63,13 +63,13 @@ class Bar {
     this.fillSprite.scale.x = this.fill;
 
     if (this.type === temperatureBarType) {
-        this.changeFill(lerpColor(0x47a1b4, 0xeb4334, this.fill));
+      this.changeFill(lerpColor(0x47a1b4, 0xeb4334, this.fill));
       //if (this.fill === 0.5)
-        //this.changeFill("#aeeb34");
+      //this.changeFill("#aeeb34");
       //else if (this.fill > 0.5)
-        //this.changeFill(lerpColor('#aeeb34', '#eb4334', (this.fill - 0.5) * 2));
+      //this.changeFill(lerpColor('#aeeb34', '#eb4334', (this.fill - 0.5) * 2));
       //else
-        //this.changeFill(lerpColor('#aeeb34', '#349beb', 1 - (this.fill) * 2));
+      //this.changeFill(lerpColor('#aeeb34', '#349beb', 1 - (this.fill) * 2));
     }
   }
 }
@@ -84,7 +84,7 @@ root.add(temperateBar.root);
 root.add(hungerBar.root);
 root.add(healthBar.root);
 
-export function numberToHexStr(a: number){
+export function numberToHexStr(a: number) {
   return '#' + ((1 << 24) + a).toString(16).slice(1);
 }
 

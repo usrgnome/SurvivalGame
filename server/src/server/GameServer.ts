@@ -89,6 +89,16 @@ export default class GameServer {
       const { eid, itemId } = e;
       this.sendChangeItem(eid, itemId);
     });
+
+    this.gameWorld._on('inventoryChange', (e) => {
+      const { eid, cid } = e;
+
+        console.log("Invetory changed!");
+      if (this.clients.has(cid)) {
+        const client = this.clients.find(cid);
+        this.sendInventory(eid, client);
+      }
+    })
   }
 
   /**

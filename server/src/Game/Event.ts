@@ -79,3 +79,15 @@ export const changeItemEvent = {
   eid: -1,
   itemId: -1,
 };
+
+export interface IEventInventoryChange {
+  type: string;
+  eid: number;
+  cid: number;
+}
+
+export const inventoryChangeEvent: IEventInventoryChange = {
+  type: 'inventoryChange',
+  eid: -1,
+  cid: -1,
+};

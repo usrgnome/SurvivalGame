@@ -3,7 +3,7 @@ import { Bodies, Body, Vector } from "matter-js";
 import { networkTypes, types } from "../../../../shared/EntityTypes";
 import { ITEM } from "../../../../shared/Item";
 import { collisionLayer } from "../../server/config";
-import { C_AttackTimer, C_Base, C_Body, C_Breath, C_ClientHandle, C_Controls, C_GivesScore, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Leaderboard, C_Mob, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo } from "./Components";
+import { C_AttackTimer, C_Base, C_Body, C_Breath, C_ClientHandle, C_Controls, C_GivesResource, C_GivesScore, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Leaderboard, C_Mob, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo } from "./Components";
 import GameWorld from "../GameWorld";
 import { Inventory_tryGiveItem } from "../Inventory";
 
@@ -155,6 +155,7 @@ export function createTree(gameWorld: GameWorld) {
     addComponent(gameWorld.world, C_Body, eid, true);
     addComponent(gameWorld.world, C_Rotation, eid, true);
     addComponent(gameWorld.world, C_HitBouceEffect, eid, true);
+    addComponent(gameWorld.world, C_GivesResource, eid, true);
 
     C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
 
@@ -171,6 +172,8 @@ export function createTree(gameWorld: GameWorld) {
 
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
+    C_GivesResource.resource[eid] = ITEM.STICKS;
+    C_GivesResource.quantity[eid] = 3;
 
     gameWorld.addEntity(eid);
 
