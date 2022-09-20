@@ -23,10 +23,10 @@ export class SocketServer {
                 const headerObject: any = {};
                 req.forEach((header, value) => headerObject[header] = value);
                 headerObject['url'] = req.getUrl();
-                clientDebugLogger.log(loggerLevel.info, JSON.stringify(headerObject));
 
                 res.upgrade({
-                    url: req.getUrl()
+                    url: req.getUrl(),
+                    debugInfo: JSON.stringify(headerObject),
                 },
                     /* Spell these correctly */
                     req.getHeader('sec-websocket-key'),

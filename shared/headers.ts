@@ -29,4 +29,5 @@ export const CLIENT_HEADER = {
   CHAT: 5,
   PONG: 6,
   EQUIP: 7,
+  CRAFT: 8,
 }

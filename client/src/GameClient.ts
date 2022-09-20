@@ -8,7 +8,7 @@ import { mBufferGeometry, mNode, mRenderer, mSprite } from "./Renderer";
 import { flushStream, inStream, outStream, sendRandomData } from "./Socket";
 import { lerpAngle } from "../../shared/Utilts";
 import { HumanEntity } from "./Entity/Human";
-import { HitAnimatedEntity, TreeEntity } from "./Entity/Tree";
+import { BushEntity, HitAnimatedEntity, TreeEntity } from "./Entity/Tree";
 import { Leaderboard_maxSize, Leaderboard_reposition, Leaderboard_showValue, Leaderboard_sprite, Leaderboard_updateValue } from "./UI/Leaderboard";
 import { healthBar, Hotbars_update, Hotbar_reposition, Hotbar_root, Hotbar_updateSlot, hungerBar, lerpColor, numberToHexStr, temperateBar } from "./UI/Hotbar";
 import { RockEntity } from "./Entity/Rock";
@@ -22,6 +22,7 @@ import { WallEntity } from "./Entity/WallEntity";
 import { SPRITE } from "../../shared/Sprite";
 import { Sprite, Sprites } from "./Sprites";
 import { addParticle, ParticleContainer_update } from "./ParticleContainer";
+import { Inventory_calculateCraftable } from "./Inventory";
 
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -152,7 +153,6 @@ export function GameClient_clearWorld() {
 }
 
 export function GameClient_selectSlot(slot: number) {
-  console.log("AWDAWDWADAWD");
   outStream.writeU8(CLIENT_HEADER.INVENTORY);
   outStream.writeU8(slot);
   flushStream();
@@ -404,6 +404,9 @@ export function gameClient_addEntity(now: number, eid: number, type: number, x: 
     case types.TREE:
       entity = new TreeEntity(type);
       break;
+    case types.BUSH:
+      entity = new BushEntity(type);
+      break;
     case types.ROCK:
       entity = new RockEntity(type);
       break;
@@ -553,11 +556,16 @@ export function GameClient_unpackHitBouceEffect() {
 
 export function GameClient_unpackInventory() {
   const size = inStream.readU8();
+  const inventory: [number, number][] = []
+
   for (let i = 0; i < size; i++) {
     const itemId = inStream.readU16();
     const quantity = inStream.readU16();
+    inventory.push([itemId, quantity]);
     Hotbar_updateSlot(i, itemId, quantity);
   }
+
+  Inventory_calculateCraftable(inventory);
 }
 
 export function GameClient_unpackHealth() {
@@ -579,6 +587,7 @@ export function GameClient_unpackPing() {
 
   outStream.writeU8(CLIENT_HEADER.PONG);
   outStream.writeU8(seqId);
+
   flushStream();
 }
 

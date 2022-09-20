@@ -1,7 +1,7 @@
 import GameServer from "./GameServer";
 import { WebSocket } from "uWebSockets.js";
 import { CLIENT_HEADER, SERVER_HEADER } from "../../../shared/headers";
-import { C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds, maxIventorySize } from "../Game/ECS/Components";
+import { C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds, maxIventorySize } from "../Game/ECS/Components";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { networkTypes, types } from "../../../shared/EntityTypes";
 import { resetPLayerStats } from "../Game/health";
@@ -10,6 +10,8 @@ import { createPlayer, NULL_ENTITY } from "../Game/ECS/EntityFactory";
 import { BinaryTypes, BufferReader, BufferSchema, BufferWriter } from "../../../shared/lib/StreamUtils"
 import { Items } from "../../../shared/Item";
 import { removeComponent } from "bitecs";
+import { Inventory_canAddItem, Inventory_craftItem, Inventory_removeItem } from "../Game/Inventory";
+import { clientDebugLogger, loggerLevel } from "./Logger";
 
 const TMP_ENTITY_MANAGER: Map<number, boolean> = new Map();
 
@@ -18,6 +20,7 @@ const inputSchema = new BufferSchema([BinaryTypes.u8, BinaryTypes.f32], { errorM
 const inventorySchema = new BufferSchema([BinaryTypes.u8], { errorMessage: "invalid invetory packet!" })
 const chatSchema = new BufferSchema([BinaryTypes.str], { errorMessage: "invalid chat packet!" })
 const pongSchema = new BufferSchema([BinaryTypes.u8], { errorMessage: "invalid pong packet!" })
+const craftSchema = new BufferSchema([BinaryTypes.u8], { errorMessage: "invalid craft packet!" })
 
 export class Client {
 
@@ -34,10 +37,8 @@ export class Client {
   eid: number = NULL_ENTITY;
   server: GameServer;
   socket: WebSocket;
-  //stream: StreamWriter = new StreamWriter();
-  stream = new BufferWriter(0xFFFF);
+  stream = new BufferWriter(0xFFFFFF);
 
-  //private inStream = new StreamReader();
   private inStream = new BufferReader();
   nickname: string = "";
   ready: boolean = false;
@@ -189,6 +190,18 @@ export class Client {
     while (inStream.hasMoreData() && (currentReads++ < 10)) { // dont read more then N packets crammed together
       const header = inStream.readU8();
       switch (header) {
+        case CLIENT_HEADER.CRAFT: {
+          try { craftSchema.validate(inStream); }
+          catch (e) { return; };
+
+          const itemId = inStream.readU8();
+          if (this.eid !== NULL_ENTITY) {
+            if (Inventory_craftItem(this.eid, itemId)) {
+              this.inventoryDirty = true;
+            }
+          }
+          break;
+        }
         case CLIENT_HEADER.REQUEST_RESPAWN:
           try { requestRespawnSchema.validate(inStream); }
           catch (e) { return; };
@@ -236,6 +249,11 @@ export class Client {
             stream.writeU8(SERVER_HEADER.BUILD_MODE);
             stream.writeU8(1);
             stream.writeU8(item.id);
+          } else if (item.isConsumable) {
+            if (Inventory_removeItem(this.eid, itemId, 1)) {
+              C_Hunger.hunger[eid] = Math.min(C_Hunger.hunger[eid] + 5, C_Hunger.maxHunger[eid]);
+              this.inventoryDirty = true;
+            }
           }
 
           break;
@@ -307,6 +325,9 @@ export class Client {
     this.nickname = nickname;
     this.eid = createPlayer(this.server.gameWorld, this.id);
     this.server.playerSpawned(this);
+
+    // @ts-ignore
+    clientDebugLogger.log(loggerLevel.info, "NICKNAME: " + nickname + " DEBUG_INFO: " + this.socket.debugInfo);
   }
 
   onPong() {
@@ -314,6 +335,7 @@ export class Client {
 
     if (seqId === this.waitingForPingSeqId) {
       this.waitingForPingSeqId = -1;
+
 
       const now = Date.now();
       const difference = now - this.pingTimestamp;

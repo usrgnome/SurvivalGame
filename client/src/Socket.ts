@@ -71,7 +71,6 @@ function Socket_onMessage(data: MessageEvent) {
 
     while (inStream.hasMoreData()) {
       const header = inStream.readU8();
-
       switch (header) {
         case SERVER_HEADER.CHAT:
           GameClient_unpackChat();

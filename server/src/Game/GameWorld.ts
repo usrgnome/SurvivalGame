@@ -6,13 +6,13 @@ import { Items, IToolItem } from '../../../shared/Item';
 import decomp from "poly-decomp"
 import { angleDifference, getRandomPointInPolygon, randomArrayIndex } from '../../../shared/Utilts';
 import { leaderboardQuery } from './ECS/Queries';
-import { attackTimerSystem, bodySystem, controlSystem, hungerSystem, mobSystem, mouseSystem, resetHitBouceSystem, temperateSystem } from './ECS/Systems';
+import { attackTimerSystem, bodySystem, controlSystem, healthSystem, hungerSystem, mobSystem, mouseSystem, resetHitBouceSystem, temperateSystem } from './ECS/Systems';
 import { mapData } from './MapData';
 import { assert, get_polygon_centroid, mapVertsToMatterVerts } from '../server/ServerUtils';
 import { collisionLayer, COLLISION_TYPES } from '../server/config';
 import EventEmitter from "events";
 import { actionEvent, addedEvent, changeItemEvent, hitBounceEvent, hurtEvent, IEventAction, IEventChangeItem, IEventEntityHurt, IEventEntityRemoved, IEventHitBounce, IEventInventoryChange, IEventTickStats, inventoryChangeEvent, removedEvent, tickStatsEvent } from './Event';
-import EntityFactory, { createPlayer, createRock, createTree, createWall, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
+import EntityFactory, { createBush, createPlayer, createRock, createTree, createWall, createWolf, NULL_ENTITY } from './ECS/EntityFactory';
 import { logger, loggerLevel } from '../server/Logger';
 import { Inventory_tryGiveItem } from './Inventory';
 
@@ -267,7 +267,6 @@ export default class GameWorld extends EventEmitter {
           category,
         }
       }); // cant be sensor and static, so sensor will override static property
-      console.log("creating body with mask", mask)
       body.parts.forEach(part => part.label = label);
       const center = get_polygon_centroid(vertices);
       Body.setPosition(body, Vector.create(center.x, center.y));
@@ -279,10 +278,7 @@ export default class GameWorld extends EventEmitter {
         }
       }
 
-      console.log(body.collisionFilter);
       Composite.add(this.engine.world, body);
-
-      setTimeout(() => { console.log(body.collisionFilter) }, 10000);
     })
   }
 
@@ -340,7 +336,6 @@ export default class GameWorld extends EventEmitter {
       }
 
       // remove from ECS
-      console.log("Removing eid", eid);
       removeEntity(this.world, eid);
 
       this.emit('entityRemoved', removedEvent);
@@ -479,6 +474,32 @@ export default class GameWorld extends EventEmitter {
     }
   }
 
+  setHealCooldown(eid: number, cooldown: number){
+    C_Health.healCoolDown[eid] = Math.max(cooldown, C_Health.healCoolDown[eid]);
+  }
+
+  heal(eid: number, heal: number, originEntity: number = NULL_ENTITY) {
+    assert(eid !== NULL_ENTITY && Number.isInteger(eid), "World::damage Invalid target eid");
+    assert(Number.isInteger(originEntity), "World::damage Invalid dealer eid");
+    assert(heal >= 0, "Health must be a positive number, use .damage(eid, health) to reduce entity health");
+
+    if (!this.isEntityActive(eid)) return;
+
+    if (hasComponent(this.world, C_Health, eid)) {
+      const health = C_Health.health[eid];
+      const newHealth = Math.min(C_Health.maxHealth[eid], Math.floor(health + heal));
+
+      if (newHealth <= 0) {
+        C_Health.health[eid] = 0;
+        if (originEntity !== NULL_ENTITY)
+          this.onEntityKilled(eid, originEntity);
+        this.onEntityDie(eid);
+      } else {
+        C_Health.health[eid] = newHealth;
+      }
+    }
+  }
+
   damage(eid: number, damage: number, originEntity: number = NULL_ENTITY) {
     assert(eid !== NULL_ENTITY && Number.isInteger(eid), "World::damage Invalid target eid");
     assert(Number.isInteger(originEntity), "World::damage Invalid dealer eid");
@@ -498,6 +519,8 @@ export default class GameWorld extends EventEmitter {
       } else {
         C_Health.health[eid] = newHealth;
 
+        this.setHealCooldown(eid, 5000); // 5 seconds to wait before can start healing
+
         hurtEvent.eid = eid;
         hurtEvent.cid = -1;
         hurtEvent.health = newHealth;
@@ -515,12 +538,10 @@ export default class GameWorld extends EventEmitter {
     ) {
       const didAddItem = Inventory_tryGiveItem(originEntity, C_GivesResource.resource[eid], C_GivesResource.quantity[eid]);
 
-      console.log(didAddItem);
       if (
         didAddItem &&
         hasComponent(this.world, C_ClientHandle, originEntity)
       ) {
-        console.log("semititng event!");
         inventoryChangeEvent.cid = C_ClientHandle.cid[originEntity];
         inventoryChangeEvent.eid = originEntity;
         this.emit(inventoryChangeEvent.type, inventoryChangeEvent);
@@ -634,7 +655,6 @@ export default class GameWorld extends EventEmitter {
    * @memberof GameWorld
    */
   update(delta: number) {
-
     const debug = false;
     debug && console.log("===================");
     const start = Date.now();
@@ -652,6 +672,7 @@ export default class GameWorld extends EventEmitter {
     attackTimerSystem(this, this.world, delta);
 
     this.timeUntilNextStatsTick -= delta;
+    healthSystem(this, this.world, delta);
     if (this.timeUntilNextStatsTick <= 0) {
       hungerSystem(this, this.world);
       temperateSystem(this, this.world);
@@ -750,6 +771,20 @@ export default class GameWorld extends EventEmitter {
       do {
         let [x, y] = getRandomPointInPolygon(polygon);
         this.setBodyPosition(rock, x, y);
+      } while (!this.willBodyOverlap(body) && (cnt++ < 10));
+    }
+
+    for (let i = 0; i < 30; i++) {
+      const forrestPolygons = mapData.FORREST.polygons;
+      const polygon = forrestPolygons[randomArrayIndex(forrestPolygons)]
+
+      const bush = createBush(this);
+      const body = this.getBody(bush);
+
+      let cnt = 0;
+      do {
+        let [x, y] = getRandomPointInPolygon(polygon);
+        this.setBodyPosition(bush, x, y);
       } while (!this.willBodyOverlap(body) && (cnt++ < 10));
     }
 

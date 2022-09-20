@@ -21,6 +21,10 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
     .input-field {
@@ -148,6 +152,11 @@
       transform: translate(-50%, -50%);
       background-color: red;
     }
+
+    #logo {
+      width: 350px;
+      padding: 10px;
+    }
   </style>
 </head>
 
@@ -155,7 +164,10 @@
   <canvas id="canvas"></canvas>
   <div class="homepage-container" id="homepage">
     <div class="play-wrapper">
+
+
       <div class="play-wrapperr">
+        <img src="./img/ui/logo.png" id="logo">
         <div class="input-field">
           <input id="nickname-input" type="text" placeholder="Enter your username" maxlength="12">
           <div id="play-section">

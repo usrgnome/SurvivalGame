@@ -45,4 +45,8 @@ if (process.env.NODE_ENV !== 'production') {
     logger.add(new transports.Console({
         format: format.simple(),
     }));
+
+    clientDebugLogger.add(new transports.Console({
+        format: format.simple(),
+    }));
 }

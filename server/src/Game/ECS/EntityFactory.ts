@@ -144,11 +144,9 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     Inventory_tryGiveItem(eid, ITEM.SPEAR, 1);
     Inventory_tryGiveItem(eid, ITEM.WOOD_WALL, 1);
     Inventory_tryGiveItem(eid, ITEM.STICKS, 1);
+    Inventory_tryGiveItem(eid, ITEM.MEAT, 10);
 
-    console.log("Adding player", eid);
     gameWorld.addEntity(eid);
-    console.log("re");
-
     return eid;
 }
 
@@ -173,13 +171,42 @@ export function createTree(gameWorld: GameWorld) {
     //@ts-ignore
     body.eid = eid;
 
-    C_Rotation.rotation[eid] = 0;
+    C_Rotation.rotation[eid] = Math.random() > .5 ? 0 : Math.PI * .5;
     gameWorld.bodyMap.set(eid, body);
     C_GivesResource.resource[eid] = ITEM.STICKS;
     C_GivesResource.quantity[eid] = 3;
 
     gameWorld.addEntity(eid);
 
+    return eid;
+}
+
+export function createBush(gameWorld: GameWorld) {
+    const eid = createEID(gameWorld, types.BUSH);
+    addComponent(gameWorld.world, C_Position, eid, true);
+    addComponent(gameWorld.world, C_Body, eid, true);
+    addComponent(gameWorld.world, C_Rotation, eid, true);
+    addComponent(gameWorld.world, C_HitBouceEffect, eid, true);
+    addComponent(gameWorld.world, C_GivesResource, eid, true);
+
+    C_Base.networkTypes[eid] = networkTypes.ADDED | networkTypes.REMOVED;
+
+    const body = Bodies.circle(0, 0, 50, {
+        collisionFilter: {
+            category: collisionLayer.ENVIRONMENT,
+            mask: collisionLayer.MOB,
+        },
+        isStatic: true,
+    });
+
+    //@ts-ignore
+    body.eid = eid;
+
+    C_Rotation.rotation[eid] = 0;
+    gameWorld.bodyMap.set(eid, body);
+    C_GivesResource.resource[eid] = ITEM.MEAT;
+    C_GivesResource.quantity[eid] = 1;
+    gameWorld.addEntity(eid);
     return eid;
 }
 

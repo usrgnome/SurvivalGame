@@ -11,7 +11,7 @@ export const C_HitBouceEffect = defineComponent({ hitInThisFrame: Types.ui8 });
 export const C_ClientHandle = defineComponent({ cid: Types.ui16 });
 export const C_AttackTimer = defineComponent({ attackDelay: Types.f32, attackCooldown: Types.f32, active: Types.ui8 });
 export const C_GivesScore = defineComponent({ deathScore: Types.ui32, hitScore: Types.ui32 });
-export const C_Health = defineComponent({ health: Types.ui16, maxHealth: Types.ui16 });
+export const C_Health = defineComponent({ health: Types.ui16, maxHealth: Types.ui16, healCoolDown: Types.f32 });
 export const C_Hunger = defineComponent({ hunger: Types.ui8, maxHunger: Types.ui8 });
 export const C_Temperature = defineComponent({ temperate: Types.ui8 });
 export const C_Breath = defineComponent({ breath: Types.ui8, maxBreath: Types.ui8 });
@@ -25,5 +25,6 @@ export const maxIventorySize = 10;
 
 // item, quantity
 export const C_Inventory = defineComponent({
-  items: [Types.ui16, maxIventorySize * 2],
+  items: [Types.ui16, maxIventorySize],
+  quantities: [Types.ui16, maxIventorySize],
 });

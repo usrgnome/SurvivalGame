@@ -59,7 +59,7 @@ class Bar {
   }
 
   update(deltaMs: number) {
-    this.fill = lerp(this.fill, this.targetFill, deltaMs);
+    this.fill = lerp(this.fill, this.targetFill, deltaMs * 3);
     this.fillSprite.scale.x = this.fill;
 
     if (this.type === temperatureBarType) {

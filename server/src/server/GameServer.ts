@@ -63,11 +63,13 @@ export default class GameServer {
       for (let i = 0; i < clients.length; i++) {
         const client = clients[i];
         if (!client.ready) continue;
-        const stream = client.stream;
-        stream.writeU8(SERVER_HEADER.HURT);
-        stream.writeLEB128(eid);
-        stream.writeF32(C_Position.x[eid]);
-        stream.writeF32(C_Position.y[eid]);
+        if (client.visibleEntities.has(eid)) {
+          const stream = client.stream;
+          stream.writeU8(SERVER_HEADER.HURT);
+          stream.writeLEB128(eid);
+          stream.writeF32(C_Position.x[eid]);
+          stream.writeF32(C_Position.y[eid]);
+        }
       }
     });
 

@@ -46,3 +46,11 @@ export class TreeEntity extends HitAnimatedEntity {
     this.root.add(this.sprite);
   }
 }
+
+export class BushEntity extends HitAnimatedEntity {
+  constructor(type: number) {
+    super(type);
+    this.sprite = new mSprite(Sprites[SPRITE.BUSH]);
+    this.root.add(this.sprite);
+  }
+}

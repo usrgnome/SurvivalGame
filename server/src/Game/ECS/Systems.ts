@@ -1,7 +1,7 @@
 import { IWorld } from "bitecs";
 import World from "../GameWorld";
 import { attackTimerQuery, bodyQuery, controlQuery, healthQuery, hitBouceQuery, hungerQuery, mobQuery, mouseQuery, temperatureQuery } from "./Queries";
-import { C_AttackTimer, C_Base, C_ClientHandle, C_Controls, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
+import { C_AttackTimer, C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
 import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
 import { createWall, NULL_ENTITY } from "./EntityFactory";
@@ -63,16 +63,29 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
 }
 
 export const hungerSystem = (gameWorld: World, world: IWorld) => {
-  return;
   const ents = hungerQuery(world);
   for (let i = 0; i < ents.length; i++) {
     const eid = ents[i]
     if (!C_Base.active[eid] || !C_Base.alive[eid]) continue;
-    let hunger = C_Hunger.hunger[eid] - 10;
+    let hunger = C_Hunger.hunger[eid] - 2;
+
+    if (C_Health.healCoolDown[eid] === 0) {
+      // if player has mostly full hunger, but not full hp
+      // start healing them, but use more hunger
+      if (hunger >= 80) {
+        if (C_Health.health[eid] < C_Health.maxHealth[eid]) {
+          gameWorld.heal(eid, 7);
+          hunger -= 3;
+        }
+      } else if (hunger >= 40) {
+        gameWorld.heal(eid, 3);
+        hunger -= 1;
+      }
+    }
 
     if (hunger <= 0) {
-      hunger = 0,
-        gameWorld.damage(eid, 10);
+      hunger = 0;
+      gameWorld.damage(eid, 10);
     }
 
     C_Hunger.hunger[eid] = hunger;
@@ -141,11 +154,17 @@ export const mobSystem = (gameWorld: World, world: IWorld, delta: number) => {
   }
 }
 
-export const healthSystem = (gameWorld: World, world: IWorld) => {
+export const healthSystem = (gameWorld: World, world: IWorld, delta: number) => {
   const ents = healthQuery(world)
   for (let i = 0; i < ents.length; i++) {
     const eid = ents[i]
     if (!C_Base.active[eid] || !C_Base.alive[eid]) continue;
+
+    if (C_Health.healCoolDown[eid] >= 0) {
+      C_Health.healCoolDown[eid] -= delta;
+      if (C_Health.healCoolDown[eid] < 0)
+        C_Health.healCoolDown[eid] = 0;
+    }
   }
 }
 

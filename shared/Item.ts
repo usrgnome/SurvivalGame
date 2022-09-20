@@ -51,6 +51,7 @@ export const ITEM = {
   WOOD_WALL: 3, 
   STICKS: 4,
   STONE: 5,
+  MEAT: 6,
 }
 
 export const Items: IItem[] = [];
@@ -94,6 +95,7 @@ Items[ITEM.SPEAR] = validateToolItem({
   useDelay: 200,
   useCooldown: 400,
   inventorySprite: SPRITE.INV_SPEAR_SLOT,
+  craftFrom: [[ITEM.STICKS, 0]],
   isMeele: true,
   meeleRange: 160,
   meeleDamage: 14,
@@ -119,6 +121,7 @@ Items[ITEM.SWORD] = validateToolItem({
   meeleRange: 100,
   meeleDamage: 7,
   sweepAngle: Math.PI * .4,
+  craftFrom: [[ITEM.STICKS, 1], [ITEM.STONE, 5]],
   anim: {
     idle: ANIMATION.IDLE_SWORD,
     move: ANIMATION.MOVE_SWORD,
@@ -150,6 +153,7 @@ Items[ITEM.STICKS] = {
   id: ITEM.STICKS,
   spriteId: -1,
   inventorySprite: SPRITE.INV_STICKS,
+  craftFrom: [[ITEM.STICKS, 0]],
   anim: {
     idle: ANIMATION.IDLE_FIST,
     move: ANIMATION.MOVE_FIST,
@@ -165,6 +169,21 @@ Items[ITEM.STONE] = {
   id: ITEM.STONE,
   spriteId: -1,
   inventorySprite: SPRITE.INV_STONE,
+  anim: {
+    idle: ANIMATION.IDLE_FIST,
+    move: ANIMATION.MOVE_FIST,
+    use: ANIMATION.USE_FIST,
+  }
+};
+
+Items[ITEM.MEAT] = {
+  isStructure: false,
+  isTool: false,
+  isEquipable: false,
+  isConsumable: true,
+  id: ITEM.MEAT,
+  spriteId: -1,
+  inventorySprite: SPRITE.INV_MEAT,
   anim: {
     idle: ANIMATION.IDLE_FIST,
     move: ANIMATION.MOVE_FIST,

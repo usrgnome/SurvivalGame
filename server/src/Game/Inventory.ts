@@ -1,4 +1,7 @@
-import { C_Inventory } from "./ECS/Components"
+import { ITEM, Items } from "../../../shared/Item";
+import { assert } from "../server/ServerUtils";
+import { C_Inventory, maxIventorySize } from "./ECS/Components"
+import { NULL_ENTITY } from "./ECS/EntityFactory";
 
 const NONE = 0;
 
@@ -78,16 +81,45 @@ export function Inventory_removeItem(entity: number, itemIdToSearchFor: number, 
       if (newQuantity === 0) {
         ar[i + 0] = NONE;
         ar[i + 1] = NONE;
+        return true;
       } else {
         ar[i + 1] = newQuantity;
+        return true;
       }
     }
   }
 
-  return 0;
+  return false;
 }
 
 export function Inventory_reset(entity: number) {
   const ar = C_Inventory.items[entity];
   for (let i = 0; i < ar.length; i++) ar[i] = NONE;
+}
+
+export function Inventory_isFull(entity: number){
+  const items = C_Inventory.items[entity];
+  const quantities = C_Inventory.quantities[entity];
+  for(let i = 0; i < maxIventorySize; i++){
+    const itemId = items[i];
+    const quantity = quantities[i];
+
+    if(itemId === ITEM.FIST || quantity === 0){
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function Inventory_craftItem(entity: number, itemId: number){
+  assert(itemId in Items, "Inventory_canCraftItem: Invalid item id");
+  assert(entity !== NULL_ENTITY && Number.isInteger(entity), "Inventory_canCraft invalid entity id");
+
+  if(Inventory_canAddItem(entity, itemId, 1)){
+    Inventory_tryGiveItem(entity, itemId, 1);
+    return true;
+  }
+
+  return false;
 }

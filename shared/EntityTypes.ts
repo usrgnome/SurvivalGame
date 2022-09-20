@@ -5,6 +5,7 @@ export const types = {
   PLAYER: $v++,
   WOLF: $v++,
   WALL: $v++,
+  BUSH: $v++,
   TREE: $v++,
 }
 
