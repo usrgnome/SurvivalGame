@@ -29,8 +29,6 @@ function canCraft(inventory: [number, number][], receipe: [number, number][]) {
 }
 
 
-const weakMap = new WeakSet();
-let kek = 0;
 export function Inventory_calculateCraftable(inventory: [number, number][]) {
     for (let i = 0; i < craftSprites.length; i++) {
         const sprite = craftSprites[i];
