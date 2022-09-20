@@ -16,9 +16,10 @@ class Decoration {
   x: number = 0;
   y: number = 0;
 
-  constructor(spriteId: number){
+  constructor(spriteId: number) {
     this.sprite = new mSprite(Sprites[spriteId]);
     this.sprite.visible = false;
+    this.sprite.setDepth(0);
   }
 
   getAABB() {
@@ -48,7 +49,7 @@ const decorationMap = new HashMap<Decoration>();
 let decorations: Decoration[] = [];
 const aabb = new AABB<Decoration>();
 
-export function activeVisibleDecorations(x: number, y: number, viewWidth: number, viewHeight: number){
+export function activeVisibleDecorations(x: number, y: number, viewWidth: number, viewHeight: number) {
   aabb.minX = x - viewWidth * .5;
   aabb.minY = y - viewHeight * .5
   aabb.maxX = x + viewWidth * .5
@@ -56,13 +57,13 @@ export function activeVisibleDecorations(x: number, y: number, viewWidth: number
 
   decorations = decorationMap.search(aabb);
 
-  for(let i = 0; i < decorations.length; i++){
+  for (let i = 0; i < decorations.length; i++) {
     decorations[i].sprite.visible = true;
   }
 }
 
-export function deactiveVisibleDecorations(){
-  for(let i = 0; i < decorations.length; i++){
+export function deactiveVisibleDecorations() {
+  for (let i = 0; i < decorations.length; i++) {
     decorations[i].sprite.visible = false;
   }
 
@@ -93,4 +94,12 @@ export function initDecoration() {
     decorationMap.insert(decoration);
     worldLayer1.add(decoration.sprite);
   }
+}
+
+export function addDecoration(x: number, y: number, type: number) {
+  const decoration = new Decoration(type);
+  decoration.sprite.rotation = Math.random() * Math.PI * 2;
+  decoration.setPosition(x, y);
+  decorationMap.insert(decoration);
+  worldLayer1.add(decoration.sprite);
 }

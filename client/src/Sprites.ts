@@ -41,7 +41,7 @@ export class Sprite {
   }
 }
 
-const treeAtlas = new mTexture("img/entity/tree11.png", new mPoint(1148, 543));
+const treeAtlas = new mTexture("img/entity/tree.png", new mPoint(1000, 1799));
 const healthBarBorder = new mTexture("img/ui/health-gauge-front.png", new mPoint(293, 60));
 const healthBarFillColor = new mTexture("img/ui/health-gauge-background-object.png", new mPoint(293, 60));
 const healthBarBgColor = new mTexture("img/ui/health-gauge-background.png", new mPoint(293, 60));
@@ -51,11 +51,12 @@ const invWall = new mTexture("img/ui/inv_wood_wall.png", new mPoint(159, 179));
 const slotAtlas = new mTexture("img/ui/inv_slot.png", new mPoint(462, 462));
 const swordSlotAtlas = new mTexture("img/ui/inv_sword_stone.png", new mPoint(462, 462));
 const spearSlotAtlas = new mTexture("img/ui/inv_spear_stone.png", new mPoint(462, 462));
-const stoneSprite = new mTexture("img/entity/stone1.png", new mPoint(520, 549));
+const stoneSprite = new mTexture("img/entity/stone.png", new mPoint(520, 549));
 const wolfTexture = new mTexture("img/entity/wolf.png", new mPoint(224, 224));
 const invSticks = new mTexture("img/ui/inv_wood.png", new mPoint(462, 462));
 const invStone = new mTexture("img/ui/inv_stone.png", new mPoint(462, 462));
 const invMeat = new mTexture("img/ui/inv_rawmeat.png", new mPoint(462, 462));
+const sand = new mTexture("img/decoration/sand.png", new mPoint(283, 263));
 const bush = new mTexture("img/entity/bush.png", new mPoint(380, 378));
 
 const itemAtlas = new mAtlas("img/item/itemAtlas.png", itemsJSON);
@@ -73,12 +74,13 @@ const quaterScale = new mPoint(.22, .22);
 const originPoint = new mPoint(0, 0);
 
 export const Sprites: any = {
-  [SPRITE.TREE]: treeAtlas.frame(originPoint, new mPoint(1148, 543), new mPoint(1148 * .5, 543 * .5), halfScale),
+  [SPRITE.TREE]: treeAtlas.frame(originPoint, new mPoint(1000, 1079), new mPoint(1000 * .5, 1079 * .5), halfScale),
+  [SPRITE.SAND]: sand.frame(originPoint, new mPoint(283, 263), new mPoint(283 * .5, 263 * .5), halfScale),
   [SPRITE.SPINNER]: treeAtlas.frame(originPoint, new mPoint(1396, 1352), new mPoint(1396 * .5, 1352 * .5), new mPoint(.1, .1)),
   [SPRITE.INV_STICKS]: invSticks.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),
   [SPRITE.INV_STONE]: invStone.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),
   [SPRITE.INV_MEAT]: invMeat.frame(originPoint, new mPoint(462, 462), new mPoint(0, 0), quaterScale),
-  [SPRITE.BUSH]: bush.frame(originPoint, new mPoint(380, 378), new mPoint(0.5 * 380, 0.5 * 378), halfScale),
+  [SPRITE.BUSH]: bush.frame(originPoint, new mPoint(380, 377), new mPoint(0.5 * 380, 0.5 * 377), halfScale),
   [SPRITE.PLAYER]: playerAtlas.frame("body2", halfScale, halfScale),
   [SPRITE.PLAYER_ARM_L]: playerAtlas.frame("arml2", halfScale, halfScale),
   [SPRITE.PLAYER_ARM_R]: playerAtlas.frame("armr2", halfScale, halfScale),

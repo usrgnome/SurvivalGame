@@ -45,5 +45,6 @@ export const SPRITE = {
   INV_STONE: 44,
   INV_MEAT: 45,
   BUSH: 46,
+  SAND: 47,
 }
 
