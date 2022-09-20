@@ -104,11 +104,8 @@ export default class GameServer {
     });
 
     this.gameWorld._on('inventoryChange', (e) => {
-      const { cid } = e;
-      if (this.clients.has(cid)) {
-        const client = this.clients.find(cid);
-        client.inventoryDirty = true;
-      }
+      const { cid, eid } = e;
+      C_Inventory.dirty[eid] = +true;
     })
   }
 
@@ -206,7 +203,7 @@ export default class GameServer {
     const temperate = C_Temperature.temperate[eid];
 
     this.updateStats(ownerClient, health, hunger, temperate);
-    this.sendInventory(ownerClient.eid, ownerClient);
+    //this.sendInventory(ownerClient.eid, ownerClient);
     ownerClient.flushStream();
   }
 
@@ -341,17 +338,18 @@ export default class GameServer {
   }
 
   sendInventory(eid: number, client: Client) {
-    const stream = client.stream;
-    const inventory = C_Inventory.items[eid];
+    //const stream = client.stream;
+    //const inventory = C_Inventory.items[eid];
+    //const quantities = C_Inventory.quantities[eid];
 
-    const size = inventory.length / 2;
-    stream.writeU8(SERVER_HEADER.INVENTORY);
-    stream.writeU8(size);
+    //const size = inventory.length;
+    //stream.writeU8(SERVER_HEADER.INVENTORY);
+    //stream.writeU8(size);
 
-    for (let i = 0; i < size; i++) {
-      stream.writeU16(inventory[i * 2 + 0]);
-      stream.writeU16(inventory[i * 2 + 1]);
-    }
+    //for (let i = 0; i < size; i++) {
+    //stream.writeU16(inventory[i]);
+    //stream.writeU16(quantities[i]);
+    //}
   }
 
   sendChat(eid: number, message: string) {

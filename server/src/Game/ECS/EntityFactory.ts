@@ -79,7 +79,7 @@ export function createWall(gameWorld: GameWorld, clientId: number, addToWorld: b
     C_Rotation.rotation[eid] = 0;
     gameWorld.bodyMap.set(eid, body);
 
-    if(addToWorld) gameWorld.addEntity(eid);
+    if (addToWorld) gameWorld.addEntity(eid);
     return eid;
 }
 
@@ -140,11 +140,12 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     C_Controls.vel[eid] = 0.200;
     C_GivesScore.deathScore[eid] = 1;
 
-    Inventory_tryGiveItem(eid, ITEM.SWORD, 1);
-    Inventory_tryGiveItem(eid, ITEM.SPEAR, 1);
+    //Inventory_tryGiveItem(eid, ITEM.SWORD, 1);
+    //Inventory_tryGiveItem(eid, ITEM.SPEAR, 1);
     Inventory_tryGiveItem(eid, ITEM.WOOD_WALL, 1);
-    Inventory_tryGiveItem(eid, ITEM.STICKS, 1);
+    //Inventory_tryGiveItem(eid, ITEM.STICKS, 1);
     Inventory_tryGiveItem(eid, ITEM.MEAT, 10);
+    C_Inventory.dirty[eid] = +true;
 
     gameWorld.addEntity(eid);
     return eid;

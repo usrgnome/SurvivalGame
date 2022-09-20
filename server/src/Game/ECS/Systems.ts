@@ -1,12 +1,13 @@
-import { IWorld } from "bitecs";
+import { hasComponent, IWorld } from "bitecs";
 import World from "../GameWorld";
 import { attackTimerQuery, bodyQuery, controlQuery, healthQuery, hitBouceQuery, hungerQuery, mobQuery, mouseQuery, temperatureQuery } from "./Queries";
-import { C_AttackTimer, C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Hunger, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
+import { C_AttackTimer, C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Temperature, C_TerrainInfo, C_Weilds, } from "./Components";
 import { Body, Vector } from "matter-js";
 import { tickMob } from "../Mob/MobAI";
 import { createWall, NULL_ENTITY } from "./EntityFactory";
 import { Items, IToolItem } from "../../../../shared/Item";
 import { types } from "../../../../shared/EntityTypes";
+import { Inventory_removeItem } from "../Inventory";
 
 export const bodySystem = (gameWorld: World, world: IWorld) => {
   const ents = bodyQuery(world)
@@ -49,6 +50,13 @@ export const mouseSystem = (gameWorld: World, world: IWorld) => {
             const wall = createWall(gameWorld, C_ClientHandle.cid[eid]);
             C_Rotation.rotation[wall] = C_Rotation.rotation[eid];
             gameWorld.setBodyPosition(wall, body.position.x + x, body.position.y + y);
+
+            Inventory_removeItem(C_Weilds.itemId[eid], 1);
+            C_Inventory.dirty[eid] = +true;
+            //if(hasComponent(world, C_ClientHandle, eid)){
+              //const cid = C_ClientHandle.cid;
+            //}
+
           }
 
           C_Mouse.mouseDown[eid] = +false;

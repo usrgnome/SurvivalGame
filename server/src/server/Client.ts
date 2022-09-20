@@ -45,8 +45,6 @@ export class Client {
   visibleEntities = new EntityIdManager();
   ownedEntities = new EntityIdManager();
 
-  inventoryDirty: boolean = false;
-
   constructor(server: GameServer, socket: WebSocket) {
     socket.client = this;
     this.server = server;
@@ -60,6 +58,8 @@ export class Client {
   }
 
   buildSnapshot() {
+    if (!this.ready) throw "Client::buildSnapshot not ready";
+
     const x = C_Position.x[this.eid];
     const y = C_Position.y[this.eid];
 
@@ -145,18 +145,19 @@ export class Client {
 
     TMP_ENTITY_MANAGER.clear();
 
-    if (this.inventoryDirty) {
-      this.inventoryDirty = false;
+    if (this.eid !== NULL_ENTITY && C_Inventory.dirty[this.eid]) {
       const eid = this.eid;
-      const inventory = C_Inventory.items[eid];
+      C_Inventory.dirty[eid] = +false;
+      const items = C_Inventory.items[eid];
+      const quantities = C_Inventory.quantities[eid];
 
-      const size = inventory.length / 2;
+      const size = items.length;
       stream.writeU8(SERVER_HEADER.INVENTORY);
       stream.writeU8(size);
 
       for (let i = 0; i < size; i++) {
-        stream.writeU16(inventory[i * 2 + 0]);
-        stream.writeU16(inventory[i * 2 + 1]);
+        stream.writeU16(items[i]);
+        stream.writeU16(quantities[i]);
       }
     }
   }
@@ -197,7 +198,7 @@ export class Client {
           const itemId = inStream.readU8();
           if (this.eid !== NULL_ENTITY) {
             if (Inventory_craftItem(this.eid, itemId)) {
-              this.inventoryDirty = true;
+              C_Inventory.dirty[this.eid] = +true;
             }
           }
           break;
@@ -228,13 +229,15 @@ export class Client {
 
           const slotId = inStream.readU8();
           if (slotId > maxIventorySize) return;
-          const slotOffset = slotId * 2;
+          const slotOffset = slotId;
           if (slotOffset >= C_Inventory.items[this.eid].length) console.warn("Too long slot offset")
 
 
           const eid = this.eid;
           const itemId = C_Inventory.items[eid][slotOffset];
           const item = Items[itemId];
+
+          if(!item) return;
 
           if (item.isTool) {
             this.server.gameWorld.equipItem(eid, itemId)
@@ -252,7 +255,7 @@ export class Client {
           } else if (item.isConsumable) {
             if (Inventory_removeItem(this.eid, itemId, 1)) {
               C_Hunger.hunger[eid] = Math.min(C_Hunger.hunger[eid] + 5, C_Hunger.maxHunger[eid]);
-              this.inventoryDirty = true;
+              C_Inventory.dirty[this.eid] = +true;
             }
           }
 

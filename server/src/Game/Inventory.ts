@@ -121,6 +121,14 @@ export function Inventory_craftItem(entity: number, itemId: number) {
 
   if (Inventory_canAddItem(entity, itemId, 1)) {
     Inventory_tryGiveItem(entity, itemId, 1);
+
+    const item = Items[itemId];
+    const recipe = item.craftFrom;
+    if(recipe){
+      for(let i = 0; i < recipe.length; i++){
+        Inventory_removeItem(entity, recipe[i][0], recipe[i][1])
+      }
+    }
     return true;
   }
 

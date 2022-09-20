@@ -25,6 +25,7 @@ export const maxIventorySize = 10;
 
 // item, quantity
 export const C_Inventory = defineComponent({
+  dirty: Types.ui8,
   items: [Types.ui16, maxIventorySize],
   quantities: [Types.ui16, maxIventorySize],
 });

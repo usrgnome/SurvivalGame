@@ -95,7 +95,7 @@ Items[ITEM.SPEAR] = validateToolItem({
   useDelay: 200,
   useCooldown: 400,
   inventorySprite: SPRITE.INV_SPEAR_SLOT,
-  craftFrom: [[ITEM.STICKS, 0]],
+  craftFrom: [[ITEM.STICKS, 6], [ITEM.STONE, 10]],
   isMeele: true,
   meeleRange: 160,
   meeleDamage: 14,
@@ -121,7 +121,7 @@ Items[ITEM.SWORD] = validateToolItem({
   meeleRange: 100,
   meeleDamage: 7,
   sweepAngle: Math.PI * .4,
-  craftFrom: [[ITEM.STICKS, 1], [ITEM.STONE, 5]],
+  craftFrom: [[ITEM.STICKS, 5], [ITEM.STONE, 5]],
   anim: {
     idle: ANIMATION.IDLE_SWORD,
     move: ANIMATION.MOVE_SWORD,
@@ -153,7 +153,7 @@ Items[ITEM.STICKS] = {
   id: ITEM.STICKS,
   spriteId: -1,
   inventorySprite: SPRITE.INV_STICKS,
-  craftFrom: [[ITEM.STICKS, 0]],
+  craftFrom: [[ITEM.STICKS, 1]],
   anim: {
     idle: ANIMATION.IDLE_FIST,
     move: ANIMATION.MOVE_FIST,
