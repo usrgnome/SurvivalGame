@@ -1,8 +1,8 @@
-import { createLogger, format, transports, LoggerOptions } from "winston";
+import { createLogger, format, transports, LoggerOptions } from 'winston'
 
 const myFormat = format.printf(({ level, message, timestamp }) => {
-    return `${timestamp} ${level}: ${message}`;
-});
+    return `${timestamp} ${level}: ${message}`
+})
 
 export const logger = createLogger({
     level: 'info',
@@ -16,7 +16,7 @@ export const logger = createLogger({
         new transports.File({ filename: './logs/error.log', level: 'error' }),
         new transports.File({ filename: './logs/combined.log' }),
     ],
-});
+})
 
 export const clientDebugLogger = createLogger({
     level: 'info',
@@ -29,7 +29,7 @@ export const clientDebugLogger = createLogger({
         //
         new transports.File({ filename: './logs/clientDebugLog.log' }),
     ],
-});
+})
 
 export const loggerLevel = {
     error: 'error',
@@ -38,15 +38,19 @@ export const loggerLevel = {
     http: 'http',
     verbose: 'verbose',
     debug: 'debug',
-    silly: 'silly'
-};
+    silly: 'silly',
+}
 
 if (process.env.NODE_ENV !== 'production') {
-    logger.add(new transports.Console({
-        format: format.simple(),
-    }));
+    logger.add(
+        new transports.Console({
+            format: format.simple(),
+        })
+    )
 
-    clientDebugLogger.add(new transports.Console({
-        format: format.simple(),
-    }));
+    clientDebugLogger.add(
+        new transports.Console({
+            format: format.simple(),
+        })
+    )
 }

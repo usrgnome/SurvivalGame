@@ -10,5 +10,5 @@
     "target": "es6",
     "esModuleInterop": true
   },
-  "include": ["server/**/*.ts"]
+  "include": ["server/**/*.ts", "server/src/server/NanoTimer.js"]
 }

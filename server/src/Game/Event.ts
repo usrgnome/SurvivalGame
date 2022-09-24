@@ -1,93 +1,93 @@
 export interface IEventEntityRemoved {
-  type: 'string';
-  eid: number;
-  cid: number;
+    type: 'string'
+    eid: number
+    cid: number
 }
 
 export const removedEvent = {
-  type: 'entityRemoved',
-  eid: -1,
-  cid: -1,
+    type: 'entityRemoved',
+    eid: -1,
+    cid: -1,
 }
 
 export interface IEventEntityAdded {
-  type: 'string';
-  eid: number;
-  cid: number;
+    type: 'string'
+    eid: number
+    cid: number
 }
 
 export const addedEvent = {
-  type: 'entityAdded',
-  eid: -1,
-  cid: -1,
+    type: 'entityAdded',
+    eid: -1,
+    cid: -1,
 }
 
 export interface IEventEntityHurt {
-  eid: number;
-  cid: number;
-  type: string;
-  health: number
+    eid: number
+    cid: number
+    type: string
+    health: number
 }
 
 export const hurtEvent = {
-  type: 'entityHurt',
-  eid: -1,
-  cid: -1,
-  health: 0,
-};
+    type: 'entityHurt',
+    eid: -1,
+    cid: -1,
+    health: 0,
+}
 
 export interface IEventHitBounce {
-  eid: number;
-  angle: number;
-  type: string;
+    eid: number
+    angle: number
+    type: string
 }
 
 export const hitBounceEvent = {
-  type: 'hitBounce',
-  eid: -1,
-  angle: 0
-};
+    type: 'hitBounce',
+    eid: -1,
+    angle: 0,
+}
 
 export interface IEventTickStats {
-  type: string;
+    type: string
 }
 
 export const tickStatsEvent = {
-  type: 'tickStats'
+    type: 'tickStats',
 }
 
 export interface IEventAction {
-  type: string,
-  eid: number,
-  animUseId: number;
+    type: string
+    eid: number
+    animUseId: number
 }
 
 export const actionEvent = {
-  type: 'action',
-  eid: -1,
-  animUseId: -1,
+    type: 'action',
+    eid: -1,
+    animUseId: -1,
 }
 
 export interface IEventChangeItem {
-  type: 'changeItem';
-  eid: number;
-  itemId: number;
+    type: 'changeItem'
+    eid: number
+    itemId: number
 }
 
 export const changeItemEvent = {
-  type: 'changeItem',
-  eid: -1,
-  itemId: -1,
-};
+    type: 'changeItem',
+    eid: -1,
+    itemId: -1,
+}
 
 export interface IEventInventoryChange {
-  type: string;
-  eid: number;
-  cid: number;
+    type: string
+    eid: number
+    cid: number
 }
 
 export const inventoryChangeEvent: IEventInventoryChange = {
-  type: 'inventoryChange',
-  eid: -1,
-  cid: -1,
-};
+    type: 'inventoryChange',
+    eid: -1,
+    cid: -1,
+}
