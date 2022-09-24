@@ -2,6 +2,105 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
 const TerserPlugin = require('terser-webpack-plugin');
+const { Compilation, sources } = require('webpack');
+
+const https = require('https');
+
+function httpsPost({ body, ...options }) {
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      method: 'POST',
+      ...options,
+    }, res => {
+      const chunks = [];
+      res.on('data', data => chunks.push(data))
+      res.on('end', () => {
+        let resBody = Buffer.concat(chunks).toString();
+        switch (res.headers['content-type']) {
+          case 'application/json':
+            resBody = JSON.parse(resBody);
+            break;
+        }
+        resolve(resBody)
+      })
+    })
+    req.on('error', reject);
+    if (body) {
+      req.write(body);
+    }
+    req.end();
+  })
+}
+
+class MyExampleWebpackPlugin {
+  // Specify the event hook to attach to
+  apply(compiler) {
+    compiler.hooks.compilation.tap(
+      "Hello World Plugin",
+      (
+        compilation /* stats is passed as an argument when done hook is tapped.  */
+      ) => {
+        compilation.hooks.processAssets.tapPromise(
+          {
+            name: "CodeProtector",
+            stage: Compilation.PROCESS_ASSETS_STAGE_ANALYSE,
+          },
+          (assets) => {
+            return new Promise(async (res, err) => {
+              for (let chunk of compilation.chunks) {
+                for (let fileName of chunk.files) {
+                  if (!fileName.toLowerCase().endsWith(".js")) {
+                    return;
+                  }
+                  const asset = compilation.assets[fileName];
+                  const { inputSource } =
+                    this.extractSourceAndSourceMap(asset);
+                  const result = await this.obfuscate(inputSource);
+                  assets[fileName] = new sources.RawSource(
+                    result,
+                    false
+                  );
+                }
+              }
+              res();
+            });
+          }
+        );
+      }
+    );
+  }
+
+  extractSourceAndSourceMap(asset) {
+    if (asset.sourceAndMap) {
+      const { source, map } = asset.sourceAndMap();
+      return {
+        inputSource: source,
+        inputSourceMap: map,
+      };
+    } else {
+      return {
+        inputSource: asset.source(),
+        inputSourceMap: asset.map(),
+      };
+    }
+  }
+
+  async obfuscate(src) {
+
+    const code = await httpsPost({
+      hostname: 'tinyjsvm.com',
+      path: `/api/compile`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        code: src,
+      })
+    });
+
+    return JSON.parse(code).code;
+  }
+}
 
 module.exports = function (env) {
   const isProduction = !!env.production;
@@ -63,6 +162,7 @@ module.exports = function (env) {
       path: path.resolve(__dirname, 'client/build'),
     },
     plugins: [
+      //new MyExampleWebpackPlugin(),
       new HtmlWebpackPlugin({
         inject: 'body',
         template: path.join(__dirname, 'client/src/assets/index.html'),
