@@ -2,6 +2,10 @@
 
 The following repository contains the scaffold code to create a simple io game. It is recommended that you use this project as a reference rather than a base to create your own projects from. The current status of this project is [unstable]unstable[/unstable] as many features have been rushed to work, without proper testing and thought.
 
+## Demo
+
+You can find a live staging server instance here: https://staging.tinyjsvm.com/
+
 ## Installation
 
 ```bash
