@@ -96,7 +96,10 @@ export const hungerSystem = (gameWorld: World, world: IWorld) => {
       gameWorld.damage(eid, 10);
     }
 
-    C_Hunger.hunger[eid] = hunger;
+    if(hunger !== C_Hunger.hunger[eid]){
+      C_Hunger.dirty[eid] = +true;
+      C_Hunger.hunger[eid] = hunger;
+    }
   }
 }
 
@@ -137,6 +140,8 @@ export const temperateSystem = (gameWorld: World, world: IWorld) => {
     //onSnow: ${C_TerrainInfo.onSnowCount[eid]}
     //`);
 
+    exposeTemperature(newTemperature, 50, 5);
+
     if (isSwimming)
       newTemperature = exposeTemperature(newTemperature, 20, 5);
 
@@ -146,9 +151,13 @@ export const temperateSystem = (gameWorld: World, world: IWorld) => {
     if (isOnLava)
       newTemperature = exposeTemperature(newTemperature, 100, 10);
 
-    C_Temperature.temperate[eid] = Math.max(0, newTemperature);
+    const finalTemperature = Math.max(0, newTemperature)
+    if(C_Temperature.temperate[eid] !== finalTemperature){
+      C_Temperature.dirty[eid] = +true;
+      C_Temperature.temperate[eid] = finalTemperature;
+    }
 
-    if (newTemperature === 0)
+    if (finalTemperature === 0)
       gameWorld.damage(eid, 10);
   }
 }
@@ -199,6 +208,7 @@ export const controlSystem = (gameWorld: World, world: IWorld, delta: number) =>
     let movementFactor = isSwimming ? swimFactor : 1;
     const x = C_Controls.x[eid] * vel * delta * movementFactor;
     const y = C_Controls.y[eid] * vel * delta * movementFactor;
+
     Body.applyForce(body, body.position, Vector.create(x, y));
   }
 }

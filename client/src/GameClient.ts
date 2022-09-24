@@ -599,12 +599,22 @@ export function GameClient_unpackInventory() {
 
 export function GameClient_unpackHealth() {
   const health = inStream.readU16();
-  const hunger = inStream.readU16();
-  const temperature = inStream.readU16();
+  //const hunger = inStream.readU16();
+  //const temperature = inStream.readU16();
 
   healthBar.setFill(health / 100);
-  temperateBar.setFill(temperature / 100);
+  //temperateBar.setFill(temperature / 100);
+  //hungerBar.setFill(hunger / 100);
+}
+
+export function GameClient_unpackHunger() {
+  const hunger = inStream.readU16();
   hungerBar.setFill(hunger / 100);
+}
+
+export function GameClient_unpackTemperature() {
+  const temperature = inStream.readU16();
+  temperateBar.setFill(temperature / 100);
 }
 
 export function GameClient_unpackDied() {

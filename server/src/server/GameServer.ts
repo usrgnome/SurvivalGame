@@ -89,7 +89,7 @@ export default class GameServer {
         const hunger = C_Hunger.hunger[eid];
         const temperate = C_Temperature.temperate[eid];
         const health = C_Health.health[eid];
-        this.updateStats(client, health, hunger, temperate);
+        //this.updateStats(client, health, hunger, temperate);
       }
     });
 
@@ -202,7 +202,7 @@ export default class GameServer {
     const hunger = C_Hunger.hunger[eid];
     const temperate = C_Temperature.temperate[eid];
 
-    this.updateStats(ownerClient, health, hunger, temperate);
+    //this.updateStats(ownerClient, health, hunger, temperate);
     //this.sendInventory(ownerClient.eid, ownerClient);
     ownerClient.flushStream();
   }
@@ -295,6 +295,7 @@ export default class GameServer {
   }
 
   updateStats(client: Client, health: number, food: number, hunger: number) {
+    return;
     const stream = client.stream;
     stream.writeU8(SERVER_HEADER.HEALTH);
     stream.writeU16(health);

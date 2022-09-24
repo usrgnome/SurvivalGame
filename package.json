@@ -7,7 +7,8 @@
     "dev:client": "webpack serve --env development",
     "dev:server": "nodemon server/src/index.ts --ignore 'client/'",
     "build-client": "rm -rf ./client/build && webpack --env production",
-    "build-server": "webpack --config webpack.server.config.js --env production"
+    "build-server": "webpack --config webpack.server.config.js --env production",
+    "docker-build": "docker build -t node-docker-tutorial ."
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "dotenv": "^16.0.1",
     "html-webpack-plugin": "^5.5.0",
     "matter-js": "^0.18.0",
+    "nodemon": "^2.0.20",
     "planck": "^1.0.0-alpha.4",
     "poly-decomp": "^0.3.0",
     "sass": "^1.53.0",
@@ -39,7 +41,6 @@
     "babel-loader": "^8.2.5",
     "copy-webpack-plugin": "^11.0.0",
     "express": "^4.18.1",
-    "nodemon": "^2.0.19",
     "stats-js": "^1.0.1",
     "terser": "^5.14.1",
     "terser-webpack-plugin": "^5.3.3",

@@ -118,7 +118,7 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
         label: 'LAND_CREATURE',
         collisionFilter: {
             category: collisionLayer.MOB,
-            mask: collisionLayer.ENVIRONMENT | collisionLayer.STRUCTURE,
+            mask: collisionLayer.ENVIRONMENT | collisionLayer.STRUCTURE | collisionLayer.BIOME,
         },
         friction: 0,
         density: 1,
@@ -136,6 +136,10 @@ export function createPlayer(gameWorld: GameWorld, clientId: number) {
     C_Health.health[eid] = C_Health.maxHealth[eid] = 100;
     C_Hunger.hunger[eid] = C_Hunger.maxHunger[eid] = 100;
     C_Breath.breath[eid] = C_Breath.maxBreath[eid] = 100;
+
+    // mark all stats as dirty so the client will send the correct information to them
+    C_Health.dirty[eid] = C_Hunger.dirty[eid] = C_Breath.dirty[eid] = C_Temperature.dirty[eid] = +true;
+    
     C_Temperature.temperate[eid] = 50;
     C_Controls.vel[eid] = 0.200;
     C_GivesScore.deathScore[eid] = 1;

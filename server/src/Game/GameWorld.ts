@@ -474,7 +474,7 @@ export default class GameWorld extends EventEmitter {
     }
   }
 
-  setHealCooldown(eid: number, cooldown: number){
+  setHealCooldown(eid: number, cooldown: number) {
     C_Health.healCoolDown[eid] = Math.max(cooldown, C_Health.healCoolDown[eid]);
   }
 
@@ -491,11 +491,13 @@ export default class GameWorld extends EventEmitter {
 
       if (newHealth <= 0) {
         C_Health.health[eid] = 0;
+        C_Health.dirty[eid] = +true;
         if (originEntity !== NULL_ENTITY)
           this.onEntityKilled(eid, originEntity);
         this.onEntityDie(eid);
       } else {
         C_Health.health[eid] = newHealth;
+        C_Health.dirty[eid] = +true;
       }
     }
   }
@@ -513,11 +515,13 @@ export default class GameWorld extends EventEmitter {
 
       if (newHealth <= 0) {
         C_Health.health[eid] = 0;
+        C_Health.dirty[eid] = +true;
         if (originEntity !== NULL_ENTITY)
           this.onEntityKilled(eid, originEntity);
         this.onEntityDie(eid);
       } else {
         C_Health.health[eid] = newHealth;
+        C_Health.dirty[eid] = +true;
 
         this.setHealCooldown(eid, 5000); // 5 seconds to wait before can start healing
 

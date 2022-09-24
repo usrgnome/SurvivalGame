@@ -1,6 +1,6 @@
 import { CLIENT_HEADER, SERVER_HEADER } from "../../shared/headers";
 import { StreamReader, StreamWriter } from "../../shared/lib/StreamWriter";
-import { GameClient_clearWorld, Gameclient_showMenu, GameClient_unpackAction, GameClient_unpackAddClient, GameClient_unpackAddEntity, GameClient_unpackBuildMode, GameClient_unpackChat, GameClient_unpackConfig, GameClient_unpackDied, GameClient_unpackHealth, GameClient_unpackHitBouceEffect, GameClient_unpackHurt, GameClient_unpackInventory, GameClient_unpackLeaderboard, GameClient_unpackPing, GameClient_unpackPingResponse, GameClient_unpackRemoveEntity, GameClient_unpackSetOurEntity, GameClient_unpackSwapItem, GameClient_unpackUpdateEntity } from "./GameClient";
+import { GameClient_clearWorld, Gameclient_showMenu, GameClient_unpackAction, GameClient_unpackAddClient, GameClient_unpackAddEntity, GameClient_unpackBuildMode, GameClient_unpackChat, GameClient_unpackConfig, GameClient_unpackDied, GameClient_unpackHealth, GameClient_unpackHitBouceEffect, GameClient_unpackHunger, GameClient_unpackHurt, GameClient_unpackInventory, GameClient_unpackLeaderboard, GameClient_unpackPing, GameClient_unpackPingResponse, GameClient_unpackRemoveEntity, GameClient_unpackSetOurEntity, GameClient_unpackSwapItem, GameClient_unpackTemperature, GameClient_unpackUpdateEntity } from "./GameClient";
 import { isDev } from "./dev";
 
 const wsLocation = location.hostname;
@@ -107,6 +107,12 @@ function Socket_onMessage(data: MessageEvent) {
           break;
         case SERVER_HEADER.HEALTH:
           GameClient_unpackHealth();
+          break;
+        case SERVER_HEADER.HUNGER:
+          GameClient_unpackHunger();
+          break;
+        case SERVER_HEADER.TEMPERATURE:
+          GameClient_unpackTemperature();
           break;
         case SERVER_HEADER.DIED:
           GameClient_unpackDied();

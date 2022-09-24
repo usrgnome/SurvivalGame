@@ -1,14 +1,14 @@
 import GameServer from "./GameServer";
 import { WebSocket } from "uWebSockets.js";
 import { CLIENT_HEADER, SERVER_HEADER } from "../../../shared/headers";
-import { C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Weilds, maxIventorySize } from "../Game/ECS/Components";
+import { C_Base, C_ClientHandle, C_Controls, C_Health, C_HitBouceEffect, C_Hunger, C_Inventory, C_Mouse, C_Position, C_Rotation, C_Temperature, C_Weilds, maxIventorySize } from "../Game/ECS/Components";
 import EntityIdManager from "../../../shared/lib/EntityIDManager";
 import { networkTypes, types } from "../../../shared/EntityTypes";
 import { resetPLayerStats } from "../Game/health";
 import { modulo } from "../../../shared/Utilts";
 import { createPlayer, NULL_ENTITY } from "../Game/ECS/EntityFactory";
 import { BinaryTypes, BufferReader, BufferSchema, BufferWriter } from "../../../shared/lib/StreamUtils"
-import { Items } from "../../../shared/Item";
+import { ITEM, Items } from "../../../shared/Item";
 import { removeComponent } from "bitecs";
 import { Inventory_canAddItem, Inventory_craftItem, Inventory_removeItem } from "../Game/Inventory";
 import { clientDebugLogger, loggerLevel } from "./Logger";
@@ -145,21 +145,44 @@ export class Client {
 
     TMP_ENTITY_MANAGER.clear();
 
-    if (this.eid !== NULL_ENTITY && C_Inventory.dirty[this.eid]) {
-      const eid = this.eid;
-      C_Inventory.dirty[eid] = +false;
-      const items = C_Inventory.items[eid];
-      const quantities = C_Inventory.quantities[eid];
+    const eid = this.eid;
+    if (eid !== NULL_ENTITY) {
 
-      const size = items.length;
-      stream.writeU8(SERVER_HEADER.INVENTORY);
-      stream.writeU8(size);
+      // check if we need to send the players stats to them!
+      if (C_Health.dirty[eid]) {
+        C_Health.dirty[eid] = +false;
+        stream.writeU8(SERVER_HEADER.HEALTH);
+        stream.writeU16(C_Health.health[eid]);
+      }
 
-      for (let i = 0; i < size; i++) {
-        stream.writeU16(items[i]);
-        stream.writeU16(quantities[i]);
+      if (C_Hunger.dirty[eid]) {
+        C_Hunger.dirty[eid] = +false;
+        stream.writeU8(SERVER_HEADER.HUNGER);
+        stream.writeU16(C_Hunger.hunger[eid]);
+      }
+
+      if (C_Temperature.dirty[eid]) {
+        C_Temperature.dirty[eid] = +false;
+        stream.writeU8(SERVER_HEADER.TEMPERATURE);
+        stream.writeU16(C_Temperature.temperate[eid]);
+      }
+
+      if (C_Inventory.dirty[eid]) {
+        C_Inventory.dirty[eid] = +false;
+        const items = C_Inventory.items[eid];
+        const quantities = C_Inventory.quantities[eid];
+
+        const size = items.length;
+        stream.writeU8(SERVER_HEADER.INVENTORY);
+        stream.writeU8(size);
+
+        for (let i = 0; i < size; i++) {
+          stream.writeU16(items[i]);
+          stream.writeU16(quantities[i]);
+        }
       }
     }
+
   }
 
 
@@ -237,24 +260,34 @@ export class Client {
           const itemId = C_Inventory.items[eid][slotOffset];
           const item = Items[itemId];
 
-          if(!item) return;
+          if (!item) return;
 
+          const stream = this.stream;
           if (item.isTool) {
             this.server.gameWorld.equipItem(eid, itemId)
-            const stream = this.stream;
             stream.writeU8(SERVER_HEADER.BUILD_MODE);
             stream.writeU8(0);
             stream.writeU8(item.id);
           }
           else if (item.isStructure) {
-            this.server.gameWorld.equipItem(eid, itemId)
-            const stream = this.stream;
-            stream.writeU8(SERVER_HEADER.BUILD_MODE);
-            stream.writeU8(1);
-            stream.writeU8(item.id);
+            if (itemId === C_Weilds.itemId[eid]) {
+              stream.writeU8(SERVER_HEADER.BUILD_MODE);
+              stream.writeU8(+false);
+              stream.writeU8(ITEM.FIST);
+              this.server.gameWorld.equipItem(eid, ITEM.FIST)
+            } else {
+              stream.writeU8(SERVER_HEADER.BUILD_MODE);
+              stream.writeU8(+true);
+              stream.writeU8(item.id);
+              this.server.gameWorld.equipItem(eid, itemId)
+            }
           } else if (item.isConsumable) {
             if (Inventory_removeItem(this.eid, itemId, 1)) {
-              C_Hunger.hunger[eid] = Math.min(C_Hunger.hunger[eid] + 5, C_Hunger.maxHunger[eid]);
+              const newHunger = Math.min(C_Hunger.hunger[eid] + 5, C_Hunger.maxHunger[eid]);
+              if (newHunger !== C_Hunger.hunger[eid]) {
+                C_Hunger.hunger[eid] = newHunger;
+                C_Hunger.dirty[eid] = + true;
+              }
               C_Inventory.dirty[this.eid] = +true;
             }
           }
